@@ -1,3 +1,5 @@
+//curl -X PUT "http://localhost:8000/new-incident" -H "Content-Type: application/json" -d "{\"case_number\": 1234, \"date\": \"2023-11-13\", \"incident\": \"student mischieft\"}"
+
 import * as path from 'node:path';
 import * as url from 'node:url';
 
