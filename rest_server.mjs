@@ -80,15 +80,17 @@ app.get('/codes', (req, res) => {
 
     let sql = 'SELECT * FROM Incidents';
     let params = [];
-    // let statement = " WHERE";
+    let statement = " WHERE";
+    // maybe this becomes LIMIT ??
 
-    // if (req.query.hasOwnProperty("mfr")) {
-    //     console.log(req.query["mfr"]);
-    //     let sql2 = statement + " mfr=?";
+    // if (req.query.hasOwnProperty("limit")) {
+    //     console.log(req.query["limit"]);
+    //     let sql2 = statement + " limit=?";
     //     sql = sql+sql2;
-    //     params.push(req.query["mfr"].toUpperCase())
+    //     params.push(req.query["limit"])
     //     statement = " AND";
     // };
+
     console.log(sql)
     console.log(params)
 
