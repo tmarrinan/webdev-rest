@@ -150,21 +150,24 @@ app.get('/incidents', (req, res) => {
     console.log(req.query); // query object (key-value pairs after the ? in the url)
     
 
-    let sql = 'SELECT * Incidents';
+    let sql = 'SELECT * FROM Incidents';
     let params = [];
     let statm1 = " WHERE";
+    let start_date = '';
+    let end_date = '';
+    
+    if (req.query.hasOwnProperty("start_date")) {
+        start_date = req.query["start_date"];
+        params.push(start_date);
+    }
 
-    if (req.query.hasOwnProperty("neighborhood_number")) {
-        sql += statm1 + " neighborhood_number=?";
-        params.push(parseInt(req.query["neighborhood_number"]))
+    if (req.query.hasOwnProperty("end_date")) {
+        end_date = req.query["end_date"]
+        params.push(end_date)
+        sql += statm1 + " DATE(date_time) BETWEEN ? AND ?";
         statm1 = " AND";
     }
 
-    if (req.query.hasOwnProperty("neighborhood_name")) {
-        sql += statm1 + " neighborhood_name=?";
-        params.push(req.query['neighborhood_name']);
-        statm1 = " AND";
-    }
 
     console.log(sql);
     console.log(params);
