@@ -63,11 +63,32 @@ app.get('/codes', (req, res) => {
     res.status(200).type('json').send({}); // <-- you will need to change this
 });
 
+//http://localhost:8000/api?mfr=p&type=c&sugar=%3E=12
 // GET request handler for neighborhoods
 app.get('/neighborhoods', (req, res) => {
     console.log(req.query); // query object (key-value pairs after the ? in the url)
-    
-    res.status(200).type('json').send({}); // <-- you will need to change this
+    let sql = 'SELECT neighborhood_number as id, neighborhood_name as name FROM Neighborhoods';
+    let params = [];
+    if(req.query.hasOwnProperty('id')){
+        // let test = req.query.id.sp
+        let ids = req.query.id.split(',');
+        sql += ' WHERE neighborhood_number = ?';
+        params.push(parseInt(ids[0]));
+        for(let i=1; i<ids.length; i++){
+            sql += ' OR neighborhood_number = ?';
+            params.push(parseInt(ids[i]));
+        }
+    }
+    console.log(sql);
+    console.log('PARAM: ', params);
+
+    dbSelect(sql, params)
+    .then(rows=>{
+        res.status(200).type('json').send(rows);
+    }).catch((error)=>{
+        res.status(500).type('txt').send(error);
+    });
+    // res.status(200).type('json').send({}); // <-- you will need to change this
 });
 
 // GET request handler for crime incidents
