@@ -113,6 +113,9 @@ app.get('/incidents', (req, res) => {
         whereCount++;
         colCount++;
     }
+    if(req.query.hasOwnProperty('limit')){
+        limit = parseInt(req.query.limit);
+    }
     params.push(limit);
     col = col=='' ? ' * ' : col;
     let sql = 'SELECT'+col+' FROM Incidents'+where+' limit ?';
