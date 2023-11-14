@@ -130,6 +130,7 @@ app.get('/incidents', (req, res) => {
         whereCount++;
         colCount++;
     }
+
     if(req.query.hasOwnProperty('end_date')){
         where += whereCount == 0 ? ' WHERE date_time <= ?':' and date_time <= ?'
         col += colCount == 0 ? 'time(date_time) as time':', time(date_time) as time';
@@ -137,6 +138,24 @@ app.get('/incidents', (req, res) => {
         whereCount++;
         colCount++;
     }
+
+    //default: all neighborhood_number
+    if(req.query.hasOwnProperty('neighborhood')){
+        let neighborhoods = req.query.neighborhood.split(',');
+        where += whereCount == 0 ? ' WHERE neighborhood_number = ?':' and neighborhood_number = ?'
+        col += colCount == 0 ? 'neighborhood_number':', neighborhood_number';
+        params.push(parseInt(neighborhoods[0]));
+        for(let i=1; i<neighborhoods.length; i++){
+            where += ' OR neighborhood_number = ?';
+            params.push(parseInt(neighborhoods[i]));
+        }
+    }else{ //neighborhood_number: DEFAULT
+        col += colCount == 0 ? 'neighborhood_number':', neighborhood_number';
+    }
+    //moved outside of 'neighborhood' because both cases will inc
+    whereCount++;
+    colCount++;
+
     if(req.query.hasOwnProperty('limit')){
         limit = parseInt(req.query.limit);
     }
@@ -148,6 +167,7 @@ app.get('/incidents', (req, res) => {
     
     dbSelect(sql, params)
     .then(rows=>{
+        logJSON(rows);
         res.status(200).type('json').send(rows);
     }).catch((error)=>{
         res.status(500).type('txt').send(error);
@@ -168,6 +188,23 @@ app.delete('/remove-incident', (req, res) => {
     
     res.status(200).type('txt').send('OK'); // <-- you may need to change this
 });
+
+//TEST FUNCTION SO YOU CAN SEE JSON EASIER (ITS IN CONSOLE)
+function logJSON(json){
+    let rows = '';
+    const t = '   '; //using t instead of \t because the space looks too wide
+    console.log('[');
+    json.forEach(row => {
+        rows += t+'{\n';
+        Object.keys(row).forEach(key=>{
+            // console.log(row[key]);
+            rows += t+t+'"'+key+'": "'+row[key]+'"\n';
+        });
+        rows += t+'},\n';
+    });
+    console.log(rows);
+    console.log(']');
+}
 
 /********************************************************************
  ***   START SERVER                                               *** 
