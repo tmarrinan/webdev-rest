@@ -70,7 +70,6 @@ app.get('/neighborhoods', (req, res) => {
     let sql = 'SELECT neighborhood_number as id, neighborhood_name as name FROM Neighborhoods';
     let params = [];
     if(req.query.hasOwnProperty('id')){
-        // let test = req.query.id.sp
         let ids = req.query.id.split(',');
         sql += ' WHERE neighborhood_number = ?';
         params.push(parseInt(ids[0]));
