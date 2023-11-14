@@ -70,7 +70,6 @@ app.get('/neighborhoods', (req, res) => {
     let sql = 'SELECT neighborhood_number as id, neighborhood_name as name FROM Neighborhoods';
     let params = [];
     if(req.query.hasOwnProperty('id')){
-        // let test = req.query.id.sp
         let ids = req.query.id.split(',');
         sql += ' WHERE neighborhood_number = ?';
         params.push(parseInt(ids[0]));
@@ -94,8 +93,39 @@ app.get('/neighborhoods', (req, res) => {
 // GET request handler for crime incidents
 app.get('/incidents', (req, res) => {
     console.log(req.query); // query object (key-value pairs after the ? in the url)
+    let whereCount = 0;
+    let colCount = 0;
+    let col = '';
+    let where = '';
+    let limit = 1000;
+    let params = [];
+    if(req.query.hasOwnProperty('start_date')){
+        where += whereCount == 0 ? ' WHERE date_time >= ?':' and date_time >= ?'
+        col += colCount == 0 ? ' date(date_time) as date':', date(date_time) as date';
+        params.push(req.query.start_date);
+        whereCount++;
+        colCount++;
+    }
+    if(req.query.hasOwnProperty('end_date')){
+        where += whereCount == 0 ? ' WHERE date_time <= ?':' and date_time <= ?'
+        col += colCount == 0 ? 'time(date_time) as time':', time(date_time) as time';
+        params.push(req.query.end_date);
+        whereCount++;
+        colCount++;
+    }
+    params.push(limit);
+    col = col=='' ? ' * ' : col;
+    let sql = 'SELECT'+col+' FROM Incidents'+where+' limit ?';
+    console.log(sql);
+    console.log('PARAM: ', params);
     
-    res.status(200).type('json').send({}); // <-- you will need to change this
+    dbSelect(sql, params)
+    .then(rows=>{
+        res.status(200).type('json').send(rows);
+    }).catch((error)=>{
+        res.status(500).type('txt').send(error);
+    });
+    // res.status(200).type('json').send({}); // <-- you will need to change this
 });
 
 // PUT request handler for new crime incident
