@@ -57,10 +57,34 @@ function dbRun(query, params) {
  ***   REST REQUEST HANDLERS                                      *** 
  ********************************************************************/
 // GET request handler for crime codes
+//EX: http://localhost:8000/codes?code=10,20,30
 app.get('/codes', (req, res) => {
     console.log(req.query); // query object (key-value pairs after the ? in the url)
-    
-    res.status(200).type('json').send({}); // <-- you will need to change this
+
+    let sql = 'SELECT code, incident_type as type FROM Codes';
+    let params = [];
+
+    if(req.query.hasOwnProperty('code')){
+        let codes = req.query.code.split(',');
+        sql += ' WHERE code = ?';
+        params.push(parseInt(codes[0]));
+        for(let i=1; i<codes.length; i++){
+            sql += ' OR code = ?';
+            params.push(parseInt(codes[i]));
+        }
+    }
+    //Order from least to greatest
+    sql += " ORDER BY code;"
+    console.log(sql);
+    console.log('PARAM: ', params);
+
+    dbSelect(sql, params)
+    .then(rows=>{
+        console.log(rows);
+        res.status(200).type('json').send(rows);
+    }).catch((error)=>{
+        res.status(404).type('json').send("An error, there is: "+error);
+    });
 });
 
 //http://localhost:8000/api?mfr=p&type=c&sugar=%3E=12
