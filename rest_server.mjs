@@ -43,6 +43,24 @@ function dbSelect(query, params) {
     });
 }
 
+// // this funciton is from the server.mjs we wrote in dynamiccereal - this works, the above function does not work for me
+// function dbSelect(query, params) {
+//     let p = new Promise((resolve, reject) => {
+//         //inside here we put our asynchronous calls
+//         //we 
+//         db.all(query, params, (err, rows) => {
+//             if (err) {
+//                 reject(err); //this will trigger the .catch block
+//             }
+//             else {
+//                 resolve(rows);
+//             }
+//         })  //then the parameters that substitue for our question marks
+//     });
+//     return p;
+// }
+
+
 // Create Promise for SQLite3 database INSERT or DELETE query
 function dbRun(query, params) {
     return new Promise((resolve, reject) => {
@@ -93,6 +111,10 @@ app.get('/codes', (req, res) => {
 
     dbSelect(sql, params)
     .then((rows) => {
+        rows.forEach((row) => {
+            row.type = row.incident_type;
+            delete row.incident_type;
+        });
         res.status(200).type('json').send(rows);
 
     })
@@ -136,6 +158,12 @@ app.get('/neighborhoods', (req, res) => {
 
     dbSelect(sql, params)
     .then((rows) => {
+        rows.forEach((row) => {
+            row.id = row.neighborhood_number;
+            delete row.neighborhood_number;
+            row.name = row.neighborhood_name
+            delete row.neighborhood_name
+        });
         res.status(200).type('json').send(rows);
 
     })
@@ -215,6 +243,10 @@ app.get('/incidents', (req, res) => {
 
     dbSelect(sql, params)
     .then((rows) => {
+        // rows.forEach((row) => {
+        //     row["date_time"] = row["type"];
+        // });
+
         console.log(rows.length)
         res.status(200).type('json').send(rows);
 

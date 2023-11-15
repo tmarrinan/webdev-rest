@@ -3,10 +3,10 @@
     "description": "REST Server",
     "version": "1.0.0",
     "author": {
-        "name": "",
-        "email": ""
+        "name": "catherinekieffer",
+        "email": "kief4528@stthomas.edu"
     },
-    "contributors": [
+    "contributors": [ "Catherine Kieffer", "Noah Friesen", "Jonny Demarais"
     ],
     "repository": {},
     "dependencies": {
