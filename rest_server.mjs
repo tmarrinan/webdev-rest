@@ -243,11 +243,14 @@ app.get('/incidents', (req, res) => {
 
     dbSelect(sql, params)
     .then((rows) => {
-        // rows.forEach((row) => {
-        //     row["date_time"] = row["type"];
-        // });
-
-        console.log(rows.length)
+        rows.forEach((row)=>{
+            let date_time_list = row.date_time.split('T')
+            console.log(date_time_list)
+            row['date']=date_time_list[0]
+            row['time']=date_time_list[1]
+            delete row['date_time']
+        })
+        console.log(rows)
         res.status(200).type('json').send(rows);
 
     })
