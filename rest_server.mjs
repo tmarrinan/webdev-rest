@@ -165,8 +165,49 @@ app.get('/incidents', (req, res) => {
         end_date = req.query["end_date"]
         params.push(end_date)
         sql += statm1 + " DATE(date_time) BETWEEN ? AND ?";
+        
         statm1 = " AND";
     }
+
+    if (req.query.hasOwnProperty("grid")) {
+        sql += statm1 + " police_grid=?";
+        let grid_list = req.query["grid"].split(",");
+        console.log(grid_list);
+        grid_list.forEach(grid => {
+            grid = grid.trim()
+            params.push(parseInt(grid));
+        });
+        for(let i=0; i<grid_list.length-1; i++) {
+            sql += " OR police_grid=?"
+        }
+        sql+="ORDER BY police_grid"
+        statm1 = " AND";
+    }
+
+    if (req.query.hasOwnProperty("neighborhood")) {
+        sql += statm1 + " neighborhood_number=?";
+        console.log(req.query["neighborhood"])
+        let neighborhood_list = req.query["neighborhood"].split(",");
+        console.log(neighborhood_list);
+        neighborhood_list.forEach(neighborhood => {
+            neighborhood = neighborhood.trim();
+            params.push(parseInt(neighborhood));
+        });
+        for(let i=0; i<neighborhood_list.length-1; i++) {
+            sql += " OR neighborhood_number=?";
+        }
+        sql+="ORDER BY neighborhood_number";
+        statm1 = " AND";
+    }
+
+    if (req.query.hasOwnProperty("limit")) {
+        sql += ` LIMIT ${parseInt(req.query["limit"])}`;
+        statm1= " AND";
+    } else {
+        sql += ' LIMIT 1000';
+        statm1= " AND";
+    }
+
 
 
     console.log(sql);
@@ -174,6 +215,7 @@ app.get('/incidents', (req, res) => {
 
     dbSelect(sql, params)
     .then((rows) => {
+        console.log(rows.length)
         res.status(200).type('json').send(rows);
 
     })
