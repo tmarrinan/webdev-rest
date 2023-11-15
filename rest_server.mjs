@@ -117,6 +117,8 @@ app.get('/neighborhoods', (req, res) => {
 // GET request handler for crime incidents
 app.get('/incidents', (req, res) => {
     console.log(req.query); // query object (key-value pairs after the ? in the url)
+    let count = 0
+    let sql = 'SELECT * FROM Incidents';
     let whereCount = 0;
     let colCount = 0;
     let col = '';
@@ -161,7 +163,7 @@ app.get('/incidents', (req, res) => {
     }
     params.push(limit);
     col = col=='' ? ' * ' : col;
-    let sql = 'SELECT'+col+' FROM Incidents'+where+' limit ?';
+    //let sql = 'SELECT'+col+' FROM Incidents'+where+' limit ?';
     console.log(sql);
     console.log('PARAM: ', params);
     
