@@ -150,7 +150,7 @@ app.get('/incidents', (req, res) => {
             params.push(parseInt(neighborhoods[i]));
         }
     }else{ //neighborhood_number: DEFAULT
-        col += colCount == 0 ? 'neighborhood_number':', neighborhood_number';
+        col += colCount == 0 ? ' neighborhood_number':', neighborhood_number';
     }
     //moved outside of 'neighborhood' because both cases will inc
     whereCount++;
@@ -197,7 +197,6 @@ function logJSON(json){
     json.forEach(row => {
         rows += t+'{\n';
         Object.keys(row).forEach(key=>{
-            // console.log(row[key]);
             rows += t+t+'"'+key+'": "'+row[key]+'"\n';
         });
         rows += t+'},\n';
