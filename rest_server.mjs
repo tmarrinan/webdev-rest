@@ -111,6 +111,10 @@ app.get('/codes', (req, res) => {
 
     dbSelect(sql, params)
     .then((rows) => {
+        rows.forEach((row) => {
+            row.type = row.incident_type;
+            delete row.incident_type;
+        });
         res.status(200).type('json').send(rows);
 
     })
@@ -154,6 +158,12 @@ app.get('/neighborhoods', (req, res) => {
 
     dbSelect(sql, params)
     .then((rows) => {
+        rows.forEach((row) => {
+            row.id = row.neighborhood_number;
+            delete row.neighborhood_number;
+            row.name = row.neighborhood_name
+            delete row.neighborhood_name
+        });
         res.status(200).type('json').send(rows);
 
     })
@@ -233,6 +243,10 @@ app.get('/incidents', (req, res) => {
 
     dbSelect(sql, params)
     .then((rows) => {
+        // rows.forEach((row) => {
+        //     row["date_time"] = row["type"];
+        // });
+
         console.log(rows.length)
         res.status(200).type('json').send(rows);
 
