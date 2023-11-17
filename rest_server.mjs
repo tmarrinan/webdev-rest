@@ -263,8 +263,41 @@ app.get('/incidents', (req, res) => {
 // PUT request handler for new crime incident
 app.put('/new-incident', (req, res) => {
     console.log(req.body); // uploaded data
+
+    let params = [];
+
+    let stringdatetime = req.body.date + "T"+req.body.time;
+    // maybe turn it into a date?
+    // let datetime = new Date(stringdatetime)
+    console.log(stringdatetime);
+
+    let sql = "INSERT INTO Incidents "
+    let columns = "(case_number, date_time, code, incident, police_grid, neighborhood_number, block)";
+    sql += columns;
+    let values = " VALUES (?, ?, ?, ?, ?, ?, ?)"
+    sql += values;
+    console.log(sql);
+    params.push(req.body.case_number);
+    params.push(stringdatetime);
+    params.push(req.body.code);
+    params.push(req.body.incident)
+    params.push(req.body.police_grid);
+    params.push(req.body.neighborhood_number);
+    params.push(req.body.block);
+    console.log(params);
+
+    // INSERT INTO Customers (CustomerName, ContactName, Address, City, PostalCode, Country)
+    // VALUES ('Cardinal', 'Tom B. Erichsen', 'Skagen 21', 'Stavanger', '4006', 'Norway');
+    // VALUES ( ?, ?, ?, ?, ?, ?) 
     
-    res.status(200).type('txt').send('OK'); // <-- you may need to change this
+    dbRun(sql, params)
+    .then(() => {
+        res.status(200).type('txt').send('OK'); // <-- you may need to change this
+    })
+    .catch((error) => {
+        res.status(500).type('txt').send(error);
+    });
+
 });
 
 // DELETE request handler for new crime incident
@@ -281,5 +314,3 @@ app.delete('/remove-incident', (req, res) => {
 app.listen(port, () => {
     console.log('Now listening on port ' + port);
 });
-
-//nothing
