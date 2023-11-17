@@ -155,6 +155,17 @@ app.get('/incidents', (req, res) => {
         count++;
     }
 
+    if(req.query.hasOwnProperty('grid')){
+        let grids = req.query.grid.split(',');
+        sql += count == 0 ? ' WHERE police_grid = ?': ' OR police_grid = ?';
+        params.push(parseInt(grids[0]));
+        for(let i=1; i<grids.length; i++){
+            sql += ' OR police_grid = ?';
+            params.push(parseInt(grids[i]));
+        }
+        count++;
+    }
+
     if(req.query.hasOwnProperty('limit')){
         limit = parseInt(req.query.limit);
     }
