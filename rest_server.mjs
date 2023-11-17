@@ -53,6 +53,16 @@ function dbRun(query, params) {
     });
 }
 
+
+
+
+
+
+
+
+
+
+
 /********************************************************************
  ***   REST REQUEST HANDLERS                                      *** 
  ********************************************************************/
@@ -87,6 +97,10 @@ app.get('/codes', (req, res) => {
     });
 });
 
+
+
+
+
 //http://localhost:8000/api?mfr=p&type=c&sugar=%3E=12
 // GET request handler for neighborhoods
 app.get('/neighborhoods', (req, res) => {
@@ -113,6 +127,10 @@ app.get('/neighborhoods', (req, res) => {
     });
     // res.status(200).type('json').send({}); // <-- you will need to change this
 });
+
+
+
+
 
 // GET request handler for crime incidents
 app.get('/incidents', (req, res) => {
@@ -175,6 +193,10 @@ app.get('/incidents', (req, res) => {
     // res.status(200).type('json').send({}); // <-- you will need to change this
 });
 
+
+
+
+
 // PUT request handler for new crime incident
 app.put('/new-incident', (req, res) => {
     console.log(req.body); // uploaded data
@@ -182,12 +204,51 @@ app.put('/new-incident', (req, res) => {
     res.status(200).type('txt').send('OK'); // <-- you may need to change this
 });
 
+
+
+
+
 // DELETE request handler for new crime incident
+//http://localhost:8000/remove-incident
 app.delete('/remove-incident', (req, res) => {
     console.log(req.body); // uploaded data
-    
-    res.status(200).type('txt').send('OK'); // <-- you may need to change this
+
+    let sql = 'DELETE FROM Incidents';
+    let params = [];
+
+    let sqlCheck;
+    if(req.body.hasOwnProperty('case_number')){
+        params.push(req.body['case_number']);
+        sql += ` WHERE case_number = ?`;
+        sqlCheck = `SELECT case_number FROM Incidents WHERE case_number = ?`;
+    }
+    console.log(sql);
+    console.log('PARAM: ', params);
+
+    //Checking to see if the row exist
+    dbSelect(sqlCheck, params)
+    .then(rows=>{
+        console.log("It exist: "+rows);
+        if (rows.length !== 0){
+            console.log("It is true they say");
+            dbRun(sql, params)
+            .then(()=>{
+                res.status(200).type('txt').send('It DOES exist, but not anymore :)');
+            }).catch((error)=>{
+                res.status(500).type('txt').send('It does not exist');
+            });
+        }else{
+            res.status(500).type('txt').send('It does not exist at all');
+        }
+    }).catch((error)=>{
+        res.status(404).type('json').send("An error, there is: "+error);
+    });
+
 });
+
+
+
+
 
 //TEST FUNCTION SO YOU CAN SEE JSON EASIER (ITS IN CONSOLE)
 function logJSON(json){
@@ -204,6 +265,16 @@ function logJSON(json){
     console.log(rows);
     console.log(']');
 }
+
+
+
+
+
+
+
+
+
+
 
 /********************************************************************
  ***   START SERVER                                               *** 
