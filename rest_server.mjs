@@ -135,35 +135,38 @@ app.get('/incidents', (req, res) => {
 
     if(req.query.hasOwnProperty('neighborhood')){
         let neighborhoods = req.query.neighborhood.split(',');
-        sql += count == 0 ? ' WHERE neighborhood_number = ?': ' AND neighborhood_number = ?';
+        sql += count == 0 ? ' WHERE (neighborhood_number = ?': ' AND (neighborhood_number = ?';
         params.push(parseInt(neighborhoods[0]));
         for(let i=1; i<neighborhoods.length; i++){
             sql += ' OR neighborhood_number = ?';
             params.push(parseInt(neighborhoods[i]));
         }
+        sql += ')'
         count++;
     }
 
     if(req.query.hasOwnProperty('code')){
         let codes = req.query.code.split(',');
-        sql += count == 0 ? ' WHERE code = ?': ' AND code = ?';
+        sql += count == 0 ? ' WHERE (code = ?': ' AND (code = ?';
         params.push(parseInt(codes[0]));
         for(let i=1; i<codes.length; i++){
             sql += ' OR code = ?';
             params.push(parseInt(codes[i]));
         }
         count++;
+        sql += ')'
     }
 
     if(req.query.hasOwnProperty('grid')){
         let grids = req.query.grid.split(',');
-        sql += count == 0 ? ' WHERE police_grid = ?': ' AND police_grid = ?';
+        sql += count == 0 ? ' WHERE (police_grid = ?': ' AND (police_grid = ?';
         params.push(parseInt(grids[0]));
         for(let i=1; i<grids.length; i++){
             sql += ' OR police_grid = ?';
             params.push(parseInt(grids[i]));
         }
         count++;
+        sql += ')'
     }
 
     if(req.query.hasOwnProperty('limit')){
