@@ -148,8 +148,8 @@ app.get('/incidents', (req, res) => {
         limit = parseInt(req.query.limit);
     }
     params.push(limit);
-    sql += ' LIMIT ?';
-    
+    sql += ' ORDER BY date_time ASC LIMIT ?';
+
     console.log(sql);
     console.log('PARAM: ', params);
     
