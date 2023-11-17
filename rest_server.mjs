@@ -144,6 +144,17 @@ app.get('/incidents', (req, res) => {
         count++;
     }
 
+    if(req.query.hasOwnProperty('code')){
+        let codes = req.query.code.split(',');
+        sql += count == 0 ? ' WHERE code = ?': ' OR code = ?';
+        params.push(parseInt(codes[0]));
+        for(let i=1; i<codes.length; i++){
+            sql += ' OR code = ?';
+            params.push(parseInt(codes[i]));
+        }
+        count++;
+    }
+
     if(req.query.hasOwnProperty('limit')){
         limit = parseInt(req.query.limit);
     }
