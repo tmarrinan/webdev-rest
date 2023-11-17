@@ -135,51 +135,64 @@ app.get('/neighborhoods', (req, res) => {
 // GET request handler for crime incidents
 app.get('/incidents', (req, res) => {
     console.log(req.query); // query object (key-value pairs after the ? in the url)
-    let whereCount = 0;
-    let colCount = 0;
-    let col = '';
-    let where = '';
-    let limit = 1000;
+    let sql = 'SELECT case_number, date(date_time) AS date, time(date_time) AS time, code, incident, police_grid, neighborhood_number, block FROM Incidents';
     let params = [];
+    let limit = 1000;
+    let count = 0;
     if(req.query.hasOwnProperty('start_date')){
-        where += whereCount == 0 ? ' WHERE date_time >= ?':' and date_time >= ?'
-        col += colCount == 0 ? ' date(date_time) as date':', date(date_time) as date';
+        sql += count == 0 ? ' WHERE date_time >= ?': ' AND date_time >= ?'
         params.push(req.query.start_date);
-        whereCount++;
-        colCount++;
+        count++;
     }
 
     if(req.query.hasOwnProperty('end_date')){
-        where += whereCount == 0 ? ' WHERE date_time <= ?':' and date_time <= ?'
-        col += colCount == 0 ? 'time(date_time) as time':', time(date_time) as time';
+        sql += count == 0 ? ' WHERE date_time <= ?': ' AND date_time <= ?'
         params.push(req.query.end_date);
-        whereCount++;
-        colCount++;
+        count++;
     }
 
-    //default: all neighborhood_number
     if(req.query.hasOwnProperty('neighborhood')){
         let neighborhoods = req.query.neighborhood.split(',');
-        where += whereCount == 0 ? ' WHERE neighborhood_number = ?':' and neighborhood_number = ?'
-        col += colCount == 0 ? 'neighborhood_number':', neighborhood_number';
+        sql += count == 0 ? ' WHERE (neighborhood_number = ?': ' AND (neighborhood_number = ?';
         params.push(parseInt(neighborhoods[0]));
         for(let i=1; i<neighborhoods.length; i++){
-            where += ' OR neighborhood_number = ?';
+            sql += ' OR neighborhood_number = ?';
             params.push(parseInt(neighborhoods[i]));
         }
-    }else{ //neighborhood_number: DEFAULT
-        col += colCount == 0 ? ' neighborhood_number':', neighborhood_number';
+        sql += ')'
+        count++;
     }
-    //moved outside of 'neighborhood' because both cases will inc
-    whereCount++;
-    colCount++;
+
+    if(req.query.hasOwnProperty('code')){
+        let codes = req.query.code.split(',');
+        sql += count == 0 ? ' WHERE (code = ?': ' AND (code = ?';
+        params.push(parseInt(codes[0]));
+        for(let i=1; i<codes.length; i++){
+            sql += ' OR code = ?';
+            params.push(parseInt(codes[i]));
+        }
+        count++;
+        sql += ')'
+    }
+
+    if(req.query.hasOwnProperty('grid')){
+        let grids = req.query.grid.split(',');
+        sql += count == 0 ? ' WHERE (police_grid = ?': ' AND (police_grid = ?';
+        params.push(parseInt(grids[0]));
+        for(let i=1; i<grids.length; i++){
+            sql += ' OR police_grid = ?';
+            params.push(parseInt(grids[i]));
+        }
+        count++;
+        sql += ')'
+    }
 
     if(req.query.hasOwnProperty('limit')){
         limit = parseInt(req.query.limit);
     }
     params.push(limit);
-    col = col=='' ? ' * ' : col;
-    let sql = 'SELECT'+col+' FROM Incidents'+where+' limit ?';
+    sql += ' ORDER BY date_time ASC LIMIT ?';
+
     console.log(sql);
     console.log('PARAM: ', params);
     
