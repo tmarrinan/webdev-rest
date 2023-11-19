@@ -6,6 +6,7 @@ import { default as sqlite3 } from 'sqlite3';
 
 const __dirname = path.dirname(url.fileURLToPath(import.meta.url));
 const db_filename = path.join(__dirname, 'db', 'stpaul_crime.sqlite3');
+//const db_filename = path.join(__dirname, 'db', 'stpaul_crime_copy.sqlite3');
 
 const port = 8000;
 
@@ -211,10 +212,47 @@ app.get('/incidents', (req, res) => {
 
 
 // PUT request handler for new crime incident
+// curl -X PUT "http://localhost:8000/new-incident" -H "Content-Type: application/json" -d '{"case_number": "24199733", "date": "11-18-2023", "time": "20:48:53", "code": "300", "incident": "Stole my heart", "police_grid": "119", "neighborhood_number": "1", "block": "4XX LUELLA ST"}'
 app.put('/new-incident', (req, res) => {
     console.log(req.body); // uploaded data
-    
-    res.status(200).type('txt').send('OK'); // <-- you may need to change this
+
+    // build INSERT query
+    let sql = "INSERT INTO Incidents (case_number, date_time, code, incident, police_grid, neighborhood_number, block) VALUES (";
+    sql += req.body.hasOwnProperty('case_number') ? `${parseInt(req.body.case_number)}, `: '';
+    // date_time
+    // code
+    sql += req.body.hasOwnProperty('incident') ? `"${req.body.incident}", `: '';
+    sql += req.body.hasOwnProperty('police_grid') ? `${parseInt(req.body.police_grid)}, `: '';
+    // neighborhood_number
+    // block
+    sql += ')'
+
+    console.log(sql)
+
+    // build SELECT query
+    let sqlCheck = "SELECT * FROM Incidents WHERE case_number = ?";
+    let params = [parseInt(req.body.case_number)];
+
+    console.log(sqlCheck);
+    console.log('PARAM: ', params);
+
+    // check if row exists
+    dbSelect(sqlCheck, params)
+    .then((rows) => {
+        console.log(rows)
+        if (rows.length !== 0) {
+            throw `Incident for case number ${req.body.case_number} already exists in the database.`
+        }
+        // insert into database
+        return dbRun(sql, params)
+    })
+    .then(() => {
+        res.status(200).type('txt').send('OK');
+    })
+    .catch((error) => {
+        console.log(error)
+        res.status(500).type('txt').send(error);
+    });
 });
 
 
