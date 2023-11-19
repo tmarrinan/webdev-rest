@@ -212,7 +212,7 @@ app.get('/incidents', (req, res) => {
 
 
 // PUT request handler for new crime incident
-// curl -X PUT "http://localhost:8000/new-incident" -H "Content-Type: application/json" -d "{\"case_number\": \"24199733\", \"date\": \"11-18-2023\", \"time\": \"20:48:53", \"code\": \"300\", \"incident\": \"Stole my heart\", \"police_grid\": \"119\", \"neighborhood_number\": \"1\", \"block\": \"4XX LUELLA ST\"}"
+// curl -X PUT "http://localhost:8000/new-incident" -H "Content-Type: application/json" -d '{"case_number": "24199733", "date": "11-18-2023", "time": "20:48:53", "code": "300", "incident": "Stole my heart", "police_grid": "119", "neighborhood_number": "1", "block": "4XX LUELLA ST"}'
 app.put('/new-incident', (req, res) => {
     console.log(req.body); // uploaded data
     
