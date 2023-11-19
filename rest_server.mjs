@@ -215,10 +215,15 @@ app.get('/incidents', (req, res) => {
 // curl -X PUT "http://localhost:8000/new-incident" -H "Content-Type: application/json" -d '{"case_number": "24199733", "date": "11-18-2023", "time": "20:48:53", "code": "300", "incident": "Stole my heart", "police_grid": "119", "neighborhood_number": "1", "block": "4XX LUELLA ST"}'
 app.put('/new-incident', (req, res) => {
     console.log(req.body); // uploaded data
-    let sql = "INSERT INTO Incidents (case_number, date_time, code, incident, police_grid, neighborhood_number, block) values (";
+    let sql = "INSERT INTO Incidents (case_number, date_time, code, incident, police_grid, neighborhood_number, block) VALUES (";
     
     sql += req.body.hasOwnProperty('case_number') ? `${parseInt(req.body.case_number)}, `: '';
 
+    sql += req.body.hasOwnProperty('incident') ? `"${req.body.incident}", `: '';
+
+    sql += req.body.hasOwnProperty('police_grid') ? `${parseInt(req.body.police_grid)}, `: '';
+
+    sql += ')'
     console.log(sql)
     res.status(200).type('txt').send('OK'); // <-- you may need to change this
 });
