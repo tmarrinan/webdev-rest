@@ -49,7 +49,7 @@ _A 500 error will be returned if the incident already exists._
 
 # DELETE requests
 
-### remove-incident
+### /remove-incident
 
 Removes an incident from the crime database.
 
