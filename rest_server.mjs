@@ -117,6 +117,7 @@ app.get('/neighborhoods', (req, res) => {
             params.push(parseInt(ids[i]));
         }
     }
+    sql += " ORDER BY id;"
     console.log(sql);
     console.log('PARAM: ', params);
 
