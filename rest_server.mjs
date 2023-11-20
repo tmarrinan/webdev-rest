@@ -224,7 +224,7 @@ app.put('/new-incident', (req, res) => {
     }
     if(req.body.hasOwnProperty('date') && req.body.hasOwnProperty('time')){
         sql += '?, ';
-        params.push(`${req.body.date} ${req.body.time}`);
+        params.push(`${req.body.date}T${req.body.time}`);
     }
     if(req.body.hasOwnProperty('code')){
         sql += '?, ';
