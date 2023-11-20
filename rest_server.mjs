@@ -212,38 +212,59 @@ app.get('/incidents', (req, res) => {
 
 
 // PUT request handler for new crime incident
-// curl -X PUT "http://localhost:8000/new-incident" -H "Content-Type: application/json" -d '{"case_number": "24199733", "date": "11-18-2023", "time": "20:48:53", "code": "300", "incident": "Stole my heart", "police_grid": "119", "neighborhood_number": "1", "block": "4XX LUELLA ST"}'
+// curl -X PUT "http://localhost:8000/new-incident" -H "Content-Type: application/json" -d "{\"case_number\": 24199733, \"date\": \"11-18-2023\", \"time\": \"20:48:53\", \"code\": 300, \"incident\": \"Stole my heart\", \"police_grid\": 119, \"neighborhood_number\": 1, \"block\": \"4XX LUELLA ST\"}"
 app.put('/new-incident', (req, res) => {
     console.log(req.body); // uploaded data
 
-    // build INSERT query
     let sql = "INSERT INTO Incidents (case_number, date_time, code, incident, police_grid, neighborhood_number, block) VALUES (";
-    sql += req.body.hasOwnProperty('case_number') ? `${parseInt(req.body.case_number)}, `: '';
-    // date_time
-    // code
-    sql += req.body.hasOwnProperty('incident') ? `"${req.body.incident}", `: '';
-    sql += req.body.hasOwnProperty('police_grid') ? `${parseInt(req.body.police_grid)}, `: '';
-    // neighborhood_number
-    // block
+    let params = [];
+    if(req.body.hasOwnProperty('case_number')){
+        sql += '?, ';
+        params.push(req.body.case_number);
+    }
+    if(req.body.hasOwnProperty('date') && req.body.hasOwnProperty('time')){
+        sql += '?, ';
+        params.push(`${req.body.date} ${req.body.time}`);
+    }
+    if(req.body.hasOwnProperty('code')){
+        sql += '?, ';
+        params.push(parseInt(req.body.code));
+    }
+    if(req.body.hasOwnProperty('incident')){
+        sql += '?, ';
+        params.push(req.body.incident);
+    }
+    if(req.body.hasOwnProperty('police_grid')){
+        sql += '?, ';
+        params.push(parseInt(req.body.police_grid));
+    }
+    if(req.body.hasOwnProperty('neighborhood_number')){
+        sql += '?, ';
+        params.push(parseInt(req.body.neighborhood_number));
+    }
+    if(req.body.hasOwnProperty('block')){
+        sql += '?';
+        params.push(req.body.block);
+    }
     sql += ')'
 
-    console.log(sql)
+    // console.log(sql);
 
     // build SELECT query
     let sqlCheck = "SELECT * FROM Incidents WHERE case_number = ?";
-    let params = [parseInt(req.body.case_number)];
 
-    console.log(sqlCheck);
-    console.log('PARAM: ', params);
+    // console.log(sqlCheck);
+    // console.log('PARAM: ', params);
 
     // check if row exists
-    dbSelect(sqlCheck, params)
+    dbSelect(sqlCheck, [parseInt(req.body.case_number)])
     .then((rows) => {
-        console.log(rows)
+        // console.log(rows)
         if (rows.length !== 0) {
             throw `Incident for case number ${req.body.case_number} already exists in the database.`
         }
         // insert into database
+        console.log('insert successful');
         return dbRun(sql, params)
     })
     .then(() => {
@@ -251,6 +272,7 @@ app.put('/new-incident', (req, res) => {
     })
     .catch((error) => {
         console.log(error)
+        console.log('Insert NOT successful');
         res.status(500).type('txt').send(error);
     });
 });
