@@ -7,7 +7,7 @@
 Returns a list of codes and their corresponding incident type (ordered by code number).
 
 ```bash
-curl "http://localhost:8000/codes?code=10,20,30"
+curl "http://localhost:8000/codes?code=110,700"
 ```
 
 ### /neighborhoods
@@ -15,7 +15,7 @@ curl "http://localhost:8000/codes?code=10,20,30"
 Returns a list of neighborhood ids and their corresponding neighborhood name (ordered by id).
 
 ```bash
-curl "http://localhost:8000/neighborhoods?id=11,74"
+curl "http://localhost:8000/neighborhoods?id=11,14"
 ```
 
 ### /incidents
