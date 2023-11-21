@@ -218,35 +218,26 @@ app.put('/new-incident', (req, res) => {
 
     let sql = "INSERT INTO Incidents (case_number, date_time, code, incident, police_grid, neighborhood_number, block) VALUES (";
     let params = [];
-    if(req.body.hasOwnProperty('case_number')){
-        sql += '?, ';
-        params.push(req.body.case_number);
+    switch(true){
+        case !req.body.hasOwnProperty('case_number'):
+        case !(req.body.hasOwnProperty('date') && req.body.hasOwnProperty('time')):
+        case !req.body.hasOwnProperty('code'):
+        case !req.body.hasOwnProperty('incident'):
+        case !req.body.hasOwnProperty('police_grid'):
+        case !req.body.hasOwnProperty('neighborhood_number'):
+        case !req.body.hasOwnProperty('block'):
+            throw 'Missing a column'
+        default:
+            sql += '?, ?, ?, ?, ?, ?, ?)'
+            params.push(req.body.case_number);
+            params.push(`${req.body.date}T${req.body.time}`);
+            params.push(req.body.code);
+            params.push(req.body.incident);
+            params.push(req.body.police_grid);
+            params.push(req.body.neighborhood_number);
+            params.push(req.body.block);
+            break;
     }
-    if(req.body.hasOwnProperty('date') && req.body.hasOwnProperty('time')){
-        sql += '?, ';
-        params.push(`${req.body.date}T${req.body.time}`);
-    }
-    if(req.body.hasOwnProperty('code')){
-        sql += '?, ';
-        params.push(parseInt(req.body.code));
-    }
-    if(req.body.hasOwnProperty('incident')){
-        sql += '?, ';
-        params.push(req.body.incident);
-    }
-    if(req.body.hasOwnProperty('police_grid')){
-        sql += '?, ';
-        params.push(parseInt(req.body.police_grid));
-    }
-    if(req.body.hasOwnProperty('neighborhood_number')){
-        sql += '?, ';
-        params.push(parseInt(req.body.neighborhood_number));
-    }
-    if(req.body.hasOwnProperty('block')){
-        sql += '?';
-        params.push(req.body.block);
-    }
-    sql += ')'
 
     // console.log(sql);
 
@@ -264,10 +255,10 @@ app.put('/new-incident', (req, res) => {
             throw `Incident for case number ${req.body.case_number} already exists in the database.`
         }
         // insert into database
-        console.log('insert successful');
         return dbRun(sql, params)
     })
     .then(() => {
+        console.log('Insert successful');
         res.status(200).type('txt').send('OK');
     })
     .catch((error) => {
