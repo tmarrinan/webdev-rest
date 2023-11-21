@@ -7,7 +7,7 @@
 Returns a list of codes and their corresponding incident type (ordered by code number).
 
 ```bash
-curl "http://localhost:8000/codes?code=10,20,30"
+curl "http://localhost:8000/codes?code=110,700"
 ```
 
 ### /neighborhoods
@@ -15,7 +15,7 @@ curl "http://localhost:8000/codes?code=10,20,30"
 Returns a list of neighborhood ids and their corresponding neighborhood name (ordered by id).
 
 ```bash
-curl "http://localhost:8000/neighborhoods?id=11,74"
+curl "http://localhost:8000/neighborhoods?id=11,14"
 ```
 
 ### /incidents
@@ -42,7 +42,7 @@ The following query parameters are supported:
 Puts a new incident and its data into the crime database.
 
 ```bash
-curl -X PUT "http://localhost:8000/new-incident" -H "Content-Type: application/json" -d '{"case_number": "24199733", "date": "11-18-2023", "time": "20:48:53", "code": "300", "incident": "Stole my heart", "police_grid": "119", "neighborhood_number": "1", "block": "4XX LUELLA ST"}'
+curl -X PUT "http://localhost:8000/new-incident" -H "Content-Type: application/json" -d '{"case_number": 999999999, "date": "2023-11-18", "time": "20:48:53", "code": 23, "incident": "Vandalism", "police_grid": 119, "neighborhood_number": 1, "block": "4XX LUELLA ST"}'
 ```
 
 _A 500 error will be returned if the incident already exists._
@@ -54,7 +54,7 @@ _A 500 error will be returned if the incident already exists._
 Removes an incident from the crime database.
 
 ```bash
-curl -X PUT "http://localhost:8000/delete" -H "Content-Type: application/json" -d '{"case_number": "24199733"}'
+curl -X DELETE "http://localhost:8000/remove-incident" -H "Content-Type: application/json" -d '{"case_number": 999999999}'
 ```
 
 _A 500 error will be returned if the incident already exists._
