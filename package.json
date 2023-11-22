@@ -3,11 +3,11 @@
     "description": "REST Server",
     "version": "1.0.0",
     "author": {
-        "name": "John",
+        "name": "John Tran",
         "email": "tran6854@stthomas.edu"
     },
     "contributors": [
-        "Francis Tran", "Matt Lao"
+        "Francis Tran", "Matt Lao", "John Tran"
     ],
     "repository": {"webdev-rest":"https://github.com/tran6854/webdev-rest"},
     "dependencies": {

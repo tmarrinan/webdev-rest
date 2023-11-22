@@ -67,10 +67,10 @@ function dbRun(query, params) {
 /********************************************************************
  ***   REST REQUEST HANDLERS                                      *** 
  ********************************************************************/
-// GET request handler for crime codes
-//EX: http://localhost:8000/codes?code=10,20,30
+// GET request handler for crime codes (COMPLETED)
+//EX: http://localhost:8000/codes?code=10
 app.get('/codes', (req, res) => {
-    console.log(req.query); // query object (key-value pairs after the ? in the url)
+    //console.log(req.query); // query object (key-value pairs after the ? in the url)
 
     let sql = 'SELECT code, incident_type as type FROM Codes';
     let params = [];
@@ -86,15 +86,15 @@ app.get('/codes', (req, res) => {
     }
     //Order from least to greatest
     sql += " ORDER BY code;"
-    console.log(sql);
-    console.log('PARAM: ', params);
+    //console.log(sql);
+    //console.log('PARAM: ', params);
 
     dbSelect(sql, params)
     .then(rows=>{
         console.log(rows);
         res.status(200).type('json').send(rows);
     }).catch((error)=>{
-        res.status(404).type('json').send("An error, there is: "+error);
+        res.status(500).type('txt').send(error);
     });
 });
 
@@ -102,10 +102,11 @@ app.get('/codes', (req, res) => {
 
 
 
-//http://localhost:8000/api?mfr=p&type=c&sugar=%3E=12
-// GET request handler for neighborhoods
+
+// GET request handler for neighborhoods (COMPLETED)
+//EX: http://localhost:8000/neighborhoods?id=11,14
 app.get('/neighborhoods', (req, res) => {
-    console.log(req.query); // query object (key-value pairs after the ? in the url)
+    //console.log(req.query); // query object (key-value pairs after the ? in the url)
     let sql = 'SELECT neighborhood_number as id, neighborhood_name as name FROM Neighborhoods';
     let params = [];
     if(req.query.hasOwnProperty('id')){
@@ -118,25 +119,28 @@ app.get('/neighborhoods', (req, res) => {
         }
     }
     sql += " ORDER BY id;"
-    console.log(sql);
-    console.log('PARAM: ', params);
+    //console.log(sql);
+    //console.log('PARAM: ', params);
 
     dbSelect(sql, params)
     .then(rows=>{
+        console.log(rows);
         res.status(200).type('json').send(rows);
     }).catch((error)=>{
         res.status(500).type('txt').send(error);
     });
-    // res.status(200).type('json').send({}); // <-- you will need to change this
 });
 
 
 
 
 
-// GET request handler for crime incidents
+// GET request handler for crime incidents (COMPLETED?)
+//EX: http://localhost:8000/incidents?start_date=2014-08-14&end_date=2014-08-20&code=600,641&limit=50
+//Note: Result should include the N most recent incidents (within specified date range).
+// Please fix case where (It suppose to show all case where it is in the date specifically): http://localhost:8000/incidents?start_date=2014-08-14&end_date=2014-08-14
 app.get('/incidents', (req, res) => {
-    console.log(req.query); // query object (key-value pairs after the ? in the url)
+    //console.log(req.query); // query object (key-value pairs after the ? in the url)
     let sql = 'SELECT case_number, date(date_time) AS date, time(date_time) AS time, code, incident, police_grid, neighborhood_number, block FROM Incidents';
     let params = [];
     let limit = 1000;
@@ -195,8 +199,8 @@ app.get('/incidents', (req, res) => {
     params.push(limit);
     sql += ' ORDER BY date_time ASC LIMIT ?';
 
-    console.log(sql);
-    console.log('PARAM: ', params);
+    //console.log(sql);
+    //console.log('PARAM: ', params);
     
     dbSelect(sql, params)
     .then(rows=>{
@@ -205,14 +209,13 @@ app.get('/incidents', (req, res) => {
     }).catch((error)=>{
         res.status(500).type('txt').send(error);
     });
-    // res.status(200).type('json').send({}); // <-- you will need to change this
 });
 
 
 
 
 
-// PUT request handler for new crime incident
+// PUT request handler for new crime incident (NEED REVIEW)
 // curl -X PUT "http://localhost:8000/new-incident" -H "Content-Type: application/json" -d "{\"case_number\": 24199733, \"date\": \"11-18-2023\", \"time\": \"20:48:53\", \"code\": 300, \"incident\": \"Stole my heart\", \"police_grid\": 119, \"neighborhood_number\": 1, \"block\": \"4XX LUELLA ST\"}"
 app.put('/new-incident', (req, res) => {
     console.log(req.body); // uploaded data
@@ -273,10 +276,10 @@ app.put('/new-incident', (req, res) => {
 
 
 
-// DELETE request handler for new crime incident
+// DELETE request handler for new crime incident (COMPLETED)
 //http://localhost:8000/remove-incident
 app.delete('/remove-incident', (req, res) => {
-    console.log(req.body); // uploaded data
+    //console.log(req.body); // uploaded data
 
     let sql = 'DELETE FROM Incidents';
     let params = [];
@@ -287,13 +290,13 @@ app.delete('/remove-incident', (req, res) => {
         sql += ` WHERE case_number = ?`;
         sqlCheck = `SELECT case_number FROM Incidents WHERE case_number = ?`;
     }
-    console.log(sql);
-    console.log('PARAM: ', params);
+    //console.log(sql);
+    //console.log('PARAM: ', params);
 
     //Checking to see if the row exist
     dbSelect(sqlCheck, params)
     .then(rows=>{
-        console.log("It exist: "+rows);
+        console.log("It exist...: "+rows);
         if (rows.length !== 0){
             console.log("It is true they say");
             dbRun(sql, params)
@@ -306,7 +309,7 @@ app.delete('/remove-incident', (req, res) => {
             res.status(500).type('txt').send('It does not exist at all');
         }
     }).catch((error)=>{
-        res.status(404).type('json').send("An error, there is: "+error);
+        res.status(500).type('txt').send(error);
     });
 
 });
