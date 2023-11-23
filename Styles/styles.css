@@ -1,0 +1,41 @@
+body{
+    background-color: teal;
+}
+
+div1{
+    height: 100px;
+    text-align: center;
+}
+
+h1{
+    font-family: impact, sans-serif;
+    font-size: clamp(0.25rem, 1vw + 3rem, 4rem);
+}
+
+div2{
+    margin-top: 20px;
+    text-align: center;
+}
+
+div3{
+    margin: 2rem;
+}
+
+p{
+    font-family: impact, sans-serif;
+    margin: 2rem;
+    margin-top: 3rem;
+    font-size: clamp(0.25rem, 1vw + 1.5rem, 1.8rem);
+}
+
+.action-button{
+    font-family: impact, sans-serif;
+    font-size: clamp(0.25rem, 1vw + 1.2rem, 2rem);
+    background-color: none;
+    color: black;
+    padding: 20px;
+    border-style: solid;
+    border-color: black;
+    border-width: 5px;
+    border-radius: 10px;
+}

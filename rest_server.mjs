@@ -9,7 +9,7 @@ import { default as sqlite3 } from 'sqlite3';
 const __dirname = path.dirname(url.fileURLToPath(import.meta.url));
 const db_filename = path.join(__dirname, 'db', 'stpaul_crime.sqlite3');
 
-const port = 8001;
+const port = 8000;
 
 let app = express();
 app.use(express.json());
@@ -58,26 +58,38 @@ function dbRun(query, params) {
 /********************************************************************
  ***   REST REQUEST HANDLERS                                      *** 
  ********************************************************************/
+
+app.get('/', (req, res) => {
+    res.sendFile(path.join(__dirname+'/home.html'));
+});
+
+app.get('/home', (req, res) => {
+    res.sendFile(path.join(__dirname+'/home.html'));
+});
+
 // GET request handler for crime codes
 app.get('/codes', (req, res) => {
-    console.log(req.query); // query object (key-value pairs after the ? in the url)
-    
-    res.status(200).type('json').send({}); // <-- you will need to change this
+
+    let sql = 'Select * FROM Codes';
+    res.sendFile(path.join(__dirname+'/codes.html'));
 });
+
 
 // GET request handler for neighborhoods
 app.get('/neighborhoods', (req, res) => {
-    console.log(req.query); // query object (key-value pairs after the ? in the url)
-    
-    res.status(200).type('json').send({}); // <-- you will need to change this
+    let query = 'SELECT * FROM neighborhoods';
+    res.sendFile(path.join(__dirname+'/neighborhoods.html'));
 });
+
+
 
 // GET request handler for crime incidents
 app.get('/incidents', (req, res) => {
-    console.log(req.query); // query object (key-value pairs after the ? in the url)
-    
-    res.status(200).type('json').send({}); // <-- you will need to change this
+    let query = 'SELECT * FROM incidents';
+    res.sendFile(path.join(__dirname+'/incidents.html'));
 });
+
+
 
 // PUT request handler for new crime incident
 app.put('/new-incident', (req, res) => {
