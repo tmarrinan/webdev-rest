@@ -69,7 +69,6 @@ app.get('/home', (req, res) => {
 
 // GET request handler for crime codes
 app.get('/codes', (req, res) => {
-
     let sql = 'Select * FROM Codes';
     res.sendFile(path.join(__dirname+'/codes.html'));
 });
@@ -90,13 +89,13 @@ app.get('/incidents', (req, res) => {
 });
 
 
-
 // PUT request handler for new crime incident
 app.put('/new-incident', (req, res) => {
     console.log(req.body); // uploaded data
     
     res.status(200).type('txt').send('OK'); // <-- you may need to change this
 });
+
 
 // DELETE request handler for new crime incident
 app.delete('/remove-incident', (req, res) => {

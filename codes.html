@@ -3,8 +3,8 @@
     <head>
         <meta charset="utf-8"/>
         <meta name="viewport" content="width=device-width, initial-scale=1"/>
-        <link rel="stylesheet" href="./Styles/foundationStyles.css">
-        <link rel="stylesheet" href="./Styles/styles.css"> 
+        <link rel="stylesheet" href="/Styles/foundationStyles.css">
+        <link rel="stylesheet" href="/Styles/styles.css"> 
         <title>Rest Server Codes</title>
     </head>
     <body>
@@ -26,18 +26,34 @@
             </div2>
 
             <div3 class="cell small-12 large-12">
-                <button>Go</button>
+                <button id="codes">Go</button>
                 <input type="text" id="userInput">
             </div3>
 
+            <p id="result">lenghoeng</p>
 
+            <script>
+                const btn1 = document.getElementById('codes');
+                const ipt1 = document.getElementById('userInput');
+                function clicked(){
+                    const value = ipt1.value;
+                    const formatted = value.charAt(0).toUpperCase() + value.slice(1).toUpperCase();
+                    if(value == ''){
+                        alert("Enter a valid Code");
+                    }
+                    else{
+                        window.location = "/codes/" + formatted;
+                    }
+                    const replace = document.getElementById('result');
+                    replace.textContent = ipt1;
+                }
+
+                btn1.addEventListener('click', clicked);
+            </script>
+
+
+            <br>
         </div>
-      
-
-
-      
-  
-
         <script type="module" src="rest_server.mjs"></script>
     </body>
 </html>
