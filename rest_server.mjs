@@ -93,10 +93,9 @@ app.get('/neighborhoods', (req, res) => {
 app.get('/incidents', (req, res) => {
     console.log(req.query); // query object (key-value pairs after the ? in the url)
     
-    const query = 'SELECT case_number, date_time as date, time, code, incident, police_grid, neighborhood_number, block FROM Incidents ORDER BY date_time DESC LIMIT 1000'; // adjust the limit as needed
-    const incidents = [];
+    const query = 'SELECT case_number, strftime("%Y-%m-%d", date_time) as date, strftime("%H:%M:%S", date_time) as time, code, incident, police_grid, neighborhood_number, block FROM Incidents ORDER BY date_time DESC LIMIT 1000';
 
-    dbSelect(query, incidents)
+    dbSelect(query)
     .then ((rows) => {
         res.status(200).type('json').json(rows);
     })
