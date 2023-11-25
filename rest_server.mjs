@@ -65,7 +65,7 @@ app.get('/codes', (req, res) => {
     dbSelect(query, codes)
 
     .then ((rows) => {
-        res.status(200).type('json').json(codes);
+        res.status(200).type('json').json(rows);
     })
     .catch((error) => {
         res.status(500).type('txt').send(error);
@@ -81,7 +81,7 @@ app.get('/neighborhoods', (req, res) => {
 
     dbSelect(query, neighborhoods)
     .then ((rows) => {
-        res.status(200).type('json').json(codes);
+        res.status(200).type('json').json(rows);
     })
     .catch((error) => {
         console.error(error);
@@ -98,7 +98,7 @@ app.get('/incidents', (req, res) => {
 
     dbSelect(query, incidents)
     .then ((rows) => {
-        res.status(200).type('json').json(incidents);
+        res.status(200).type('json').json(rows);
     })
     .catch((error) => {
         console.error(error);
