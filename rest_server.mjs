@@ -129,8 +129,57 @@ app.get('/neighborhoods/:id', (req, res) => {
 
 // GET request handler for crime incidents
 app.get('/incidents', (req, res) => {
-    let query = 'SELECT  *, date([date_time]) as incident_date,  time([date_time]) as incident_time FROM incidents Order by date_time';
-    //res.sendFile(path.join(__dirname+'/incidents.html'));
+    var start_date = req.query.start_date;
+    var end_date = req.query.end_date;
+    var code = req.query.code;
+    var grid = req.query.grid;
+    var neighborhood =  req.query.neighborhood;
+    var limit = req.query.limit;
+
+
+
+    console.log('start date = ' + start_date);
+    console.log(start_date.length);
+    let query = 'SELECT  *, date([date_time]) as incident_date,  time([date_time]) as incident_time FROM incidents';
+
+    if ((start_date?.length > 0) || (end_date?.length > 0) || (code?.length > 0) || (grid?.length > 0) || (neighborhood?.lenght > 0))
+    {
+        query += ' where 1=1 ';
+    }
+
+    if (start_date?.length > 0)
+    {
+        query = query + 'and incident_date >= ' + '\'' + start_date + '\' ';
+    }
+
+    if (end_date?.length > 0)
+    {
+        query = query + 'and incident_date <= ' + '\'' + start_date + '\' ';
+    }
+
+    if (code?.length > 0)
+    {
+        query = query + 'and code in (' + code + ') ';
+    }
+
+    if (grid?.length > 0)
+    {
+        query = query + 'and police_grid in (' + grid + ') ';
+    }
+
+    if (neighborhood?.length > 0)
+    {
+        query = query + 'and neighborhood_number in (' + neighborhood + ') ';
+    }
+
+    query = query + ' Order by date_time ';
+
+    if (limit?.length > 0)
+    {
+        query = query + 'limit ' + limit;
+    }
+
+    console.log(query);
     db.all(query, [], (err, rows) => {
         if(err) {
             res.status(400).json({"error":err.message})
