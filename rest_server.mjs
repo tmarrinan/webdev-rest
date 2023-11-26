@@ -298,7 +298,7 @@ app.put('/new-incident', (req, res) => {
     // INSERT INTO Customers (CustomerName, ContactName, Address, City, PostalCode, Country)
     // VALUES ('Cardinal', 'Tom B. Erichsen', 'Skagen 21', 'Stavanger', '4006', 'Norway');
     // VALUES ( ?, ?, ?, ?, ?, ?) 
-    
+
     dbRun(sql, params)
     .then(() => {
         res.status(200).type('txt').send('OK'); // <-- you may need to change this
@@ -311,9 +311,24 @@ app.put('/new-incident', (req, res) => {
 
 // DELETE request handler for new crime incident
 app.delete('/remove-incident', (req, res) => {
-    console.log(req.body); // uploaded data
-    
-    res.status(200).type('txt').send('OK'); // <-- you may need to change this
+    dbSelect('SELECT * FROM Incidents WHERE case_number = ?', [req.body])
+        .then((rows) => {
+            if (rows.length === 0) {
+                res.status(500).type('txt').send('Case number not found');
+            } else {
+                const sql = 'DELETE FROM Incidents WHERE case_number = ?';
+                dbRun(sql, [case_number])
+                    .then(() => {
+                        res.status(200).type('txt').send('OK');
+                    })
+                    .catch((error) => {
+                        res.status(500).type('txt').send(error);
+                    });
+            }
+        })
+        .catch((error) => {
+            res.status(500).type('txt').send(error);
+        });
 });
 
 /********************************************************************
