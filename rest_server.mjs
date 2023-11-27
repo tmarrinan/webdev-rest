@@ -3,7 +3,7 @@
 import * as path from 'node:path';
 import * as url from 'node:url';
 
-import { default as express } from 'express';
+import { default as express, json } from 'express';
 import { default as sqlite3 } from 'sqlite3';
 
 const __dirname = path.dirname(url.fileURLToPath(import.meta.url));
@@ -15,20 +15,19 @@ let app = express();
 app.use(express.json());
 
 /********************************************************************
- ***   DATABASE FUNCTIONS                                         *** 
+ ***   DATABASE FUNCTIONS                                         ***
  ********************************************************************/
 // Open SQLite3 database (in read-write mode)
-let db = new sqlite3.Database('./stpaul_crime.sqlite3', sqlite3.OPEN_READWRITE, (err) => {
+let db = new sqlite3.Database(db_filename, sqlite3.OPEN_READWRITE, (err) => {
     if (err) {
         console.log('Error opening ' + path.basename(db_filename));
-        console.log(__dirname);
     }
     else {
         console.log('Now connected to ' + path.basename(db_filename));
     }
 });
 
-// Create Promise for SQLite3 database SELECT query 
+// Create Promise for SQLite3 database SELECT query
 function dbSelect(query, params) {
     return new Promise((resolve, reject) => {
         db.all(query, params, (err, rows) => {
@@ -56,156 +55,127 @@ function dbRun(query, params) {
     });
 }
 
+
+
+
+
 /********************************************************************
- ***   REST REQUEST HANDLERS                                      *** 
+ ***   REST REQUEST HANDLERS                                      ***
  ********************************************************************/
-
-/*app.get('/', (req, res) => {
-    res.sendFile(path.join(__dirname+'/home.html'));
-});
-
-app.get('/home', (req, res) => {
-    res.sendFile(path.join(__dirname+'/home.html'));
-});*/
-
-// GET request handler for crime codes
+// GET request handler for crime codes (need to format output)
 app.get('/codes', (req, res) => {
+   
+    let codeSelections = req.query;
+    let query = 'Select * FROM Codes';
+    let params = [];
 
-    let query = 'Select code, incident_type FROM codes Order by code';
-    db.all(query, [], (err, rows) => {
-        if (err) {
-            res.status(400).json({"error":err.message})
-            return;
-        }
-        res.status(200).json({rows});
-    });
-    //res.sendFile(path.join(__dirname+'/codes.html'));
+    //If user entered in any values to filter query
+    if (req.query.hasOwnProperty('code')) {
+        codeSelections = req.query.code.replaceAll(',', ' OR code = ');
+        query += ' WHERE code = '
+        query += codeSelections;
+    }
+
+    query += ' ORDER BY code';
+   
+    //Select data from database
+    dbSelect(query, params)
+    .then((rows) =>{
+        const formattedRows = rows.map(row => ({ code: row.code, type: row.incident_type }));
+        res.status(200).json(formattedRows);
+    })
+    .catch((error) =>{
+        res.status(500).type('txt').send(error);
+    })
 });
 
-// GET request handler for specific crime codes
-app.get('/codes/:id', (req, res) => {
-    console.log('id= ' + req.params.id);
-    var code = req.params.id;
-    let query = 'Select code, incident_type FROM codes where code in (' + code + ') Order by code';
-    console.log(query);
-    db.all(query, [] , (err, rows) => {
-        if (err) {
-            res.status(400).json({"error":err.message})
-            return;
-        }
-        res.status(200).json({rows});
-    });
-    //res.sendFile(path.join(__dirname+'/codes.html'));
-});
 
-// GET request handler for neighborhoods
+
+
+
+// GET request handler for Neighborhoods (need to format the output)
 app.get('/neighborhoods', (req, res) => {
-    let query = 'SELECT neighborhood_number, neighborhood_name FROM neighborhoods Order by neighborhood_number';
-    //res.sendFile(path.join(__dirname+'/neighborhoods.html'));
 
-    db.all(query, [], (err, rows) => {
-        if (err) {
-            res.status(400).json({"error":err.message})
-            return; 
-        }
-        res.status(200).json({rows});
-    });
+    let idSelections = req.query;
+    let query = 'Select * FROM Neighborhoods';
+    let params = [];
+
+    //If the user entered any values to filter query
+    if (req.query.hasOwnProperty('neighborhood_number')) {
+        idSelections = req.query.neighborhood_number.replace(/,/g, ' OR neighborhood_number = ');
+        query += ' WHERE neighborhood_number = ';
+        query += idSelections;
+    }
+
+    query += ' ORDER BY neighborhood_number';
+
+    //Select data from the database
+    dbSelect(query, params)
+    .then((rows) =>{
+        const formattedRows = rows.map(row => ({ id: row.neighborhood_number, name: row.neighborhood_name }));
+        res.status(200).json(formattedRows);
+    })
+    .catch((error) =>{
+        res.status(500).type('txt').send(error);
+    })
 });
 
-// GET request handler for specific neighborhoods
-app.get('/neighborhoods/:id', (req, res) => {
-    var code = req.params.id;
-    let query = 'SELECT neighborhood_number, neighborhood_name FROM neighborhoods where neighborhood_number in (' + code + ') Order by neighborhood_number';
-    //res.sendFile(path.join(__dirname+'/neighborhoods.html'));
-    console.log(query);
-    db.all(query, [], (err, rows) => {
-        if (err) {
-            res.status(400).json({"error":err.message})
-            return; 
-        }
-        res.status(200).json({rows});
-    });
-});
+
 
 // GET request handler for crime incidents
 app.get('/incidents', (req, res) => {
-    var start_date = req.query.start_date;
-    var end_date = req.query.end_date;
-    var code = req.query.code;
-    var grid = req.query.grid;
-    var neighborhood =  req.query.neighborhood;
-    var limit = req.query.limit;
 
+    //base query with no filters (DONE)
+    let query = 'SELECT * FROM incidents';
 
+    //user params passed to dbSelect statement
+    let params = [];
 
-    console.log('start date = ' + start_date);
-    console.log(start_date.length);
-    let query = 'SELECT  *, date([date_time]) as incident_date,  time([date_time]) as incident_time FROM incidents';
+    //Set count to 0 (tracks multiple filters)
+    let count = 0;
 
-    if ((start_date?.length > 0) || (end_date?.length > 0) || (code?.length > 0) || (grid?.length > 0) || (neighborhood?.lenght > 0))
-    {
-        query += ' where 1=1 ';
+    //Set base limit (DONE)
+    var limit = 1000;
+
+    if(req.query.hasOwnProperty('code')){
+        if(count > 0){query += " AND ";}
+        else{query += " WHERE "};
+        query += "code = " + req.query.code;
+        count++;
     }
 
-    if (start_date?.length > 0)
-    {
-        query = query + 'and incident_date >= ' + '\'' + start_date + '\' ';
+    if(req.query.hasOwnProperty('grid')){
+        if(count > 0){query += " AND ";}
+        else{query += " WHERE "};
+        query += "police_grid = " + req.query.grid;
+        count++;
     }
 
-    if (end_date?.length > 0)
-    {
-        query = query + 'and incident_date <= ' + '\'' + start_date + '\' ';
+    if(req.query.hasOwnProperty('id')){
+        if(count > 0){query += " AND ";}
+        else{query += " WHERE "};
+        query += "neighborhood_number = " + req.query.id;
+        console.log(query);
+        count++;
     }
 
-    if (code?.length > 0)
-    {
-        query = query + 'and code in (' + code + ') ';
-    }
 
-    if (grid?.length > 0)
-    {
-        query = query + 'and police_grid in (' + grid + ') ';
-    }
+    //Set limit to user amount or 1000 (DONE)
+    if(req.query.hasOwnProperty('limit')){limit = req.query.limit;}
+    query += " LIMIT " + limit;
 
-    if (neighborhood?.length > 0)
-    {
-        query = query + 'and neighborhood_number in (' + neighborhood + ') ';
-    }
-
-    query = query + ' Order by date_time ';
-
-    if (limit?.length > 0)
-    {
-        query = query + 'limit ' + limit;
-    }
 
     console.log(query);
-    db.all(query, [], (err, rows) => {
-        if(err) {
-            res.status(400).json({"error":err.message})
-            return;
-        }
-        res.status(200).json({rows});
+
+    // Select from database and send as json
+    dbSelect(query, params)
+    .then((rows) => {
+        res.status(200).type('json').send(rows);
+    })
+    .catch((error) => {
+        res.status(500).type('txt').send(error);
     });
 });
-
-
-app.post("/new-incident/", (req,res, next) => {
-    var reqBody = req.body; 
-    db.run('INSERT INTO incidents (case_number, date_time, code, incident, police_grid, neighborhood_number, block) VALUES (?, ?, ?, ?, ?, ?, ?)',
-    [reqBody.case_number, reqBody.date_time, reqBody.code, reqBody.incident, reqBody.police_grid, reqBody.neighborhood_number, reqBody.block], 
-    function (err, result) {
-        if (err) {
-            res.status(500).json({"error": err.message})
-            return;
-        }
-        res.status(201).json({
-            "case_number": reqBody.case_number
-        })
-    });
-});
-
-
 
 
 
@@ -214,31 +184,57 @@ app.post("/new-incident/", (req,res, next) => {
 
 
 // PUT request handler for new crime incident
-/* app.put('/new-incident', (req, res) => {
-    console.log(req.body); // uploaded data
-    let query = "insert into incidents values('" + req.
-    res.status(200).type('txt').send('OK'); // <-- you may need to change this
-}); */
+app.put('/new-incident', (req, res) => {
+    const { case_number, date, incident, police_grid, neighborhood_number, block } = req.body;
 
-// DELETE request handler for new crime incident
-app.delete('/remove-incident/:id', (req, res) => {
-    let query = 'DELETE FROM incidents WHERE case_number = ?';
-    console.log('id= ' + req.params.id);
-    db.run(query,
-        req.params.id, 
-        function (err, result) {
-            if (err) {
-                res.status(500).json({"error":res.message})
-                return;
-            }
-            res.status(200).json({deletedID: this.message})
+    // Check if all required fields are present in the request body
+    if (!case_number || !date || !incident || !police_grid || !neighborhood_number || !block) {
+        res.status(400).json({ error: 'Missing required fields in the request body' });
+        return;
+    }
+
+    // Create the INSERT query
+    const query = 'INSERT INTO incidents (case_number, date, incident, police_grid, neighborhood_number, block) VALUES (?, ?, ?, ?, ?, ?)';
+    const params = [case_number, date, incident, police_grid, neighborhood_number, block];
+
+    // Run the query to insert the new incident
+    dbRun(query, params)
+        .then(() => {
+            res.status(200).json({ message: 'Incident added successfully' });
+        })
+        .catch((error) => {
+            res.status(500).json({ error: error.message });
         });
-    //console.log(req.body); // uploaded data
-    //res.status(200).type('txt').send('OK'); // <-- you may need to change this
 });
 
+
+
+
+
+
+// DELETE request handler for new crime incident
+app.delete('/remove-incident', async (req, res) => {
+    let query = 'DELETE FROM incidents WHERE case_number = ?';
+    console.log('Before dbRun');
+    dbRun(query, params)
+        .then(() => {
+            console.log('Incident added successfully');
+            res.status(200).json({ message: 'Incident added successfully' });
+        })
+        .catch((error) => {
+            console.error('Error adding incident:', error.message);
+            res.status(500).json({ error: error.message });
+        });
+    console.log('After dbRun');    
+});
+
+
+
+
+
+
 /********************************************************************
- ***   START SERVER                                               *** 
+ ***   START SERVER                                               ***
  ********************************************************************/
 // Start server - listen for client connections
 app.listen(port, () => {
