@@ -9,7 +9,7 @@ console.log(__dirname)
 const db_filename = path.join(__dirname, 'db', 'stpaul_crime.sqlite3');
 console.log(db_filename)
 
-const port = 8080;
+const port = 8000;
 
 let app = express();
 app.use(express.json());
@@ -301,7 +301,7 @@ app.put('/new-incident', (req, res) => {
 
     dbRun(sql, params)
     .then(() => {
-        res.status(200).type('txt').send('OK'); // <-- you may need to change this
+        res.status(200).type('txt').send('OK');
     })
     .catch((error) => {
         res.status(500).type('txt').send(error);
@@ -310,26 +310,41 @@ app.put('/new-incident', (req, res) => {
 });
 
 // DELETE request handler for new crime incident
+// app.delete('/remove-incident', (req, res) => {
+//     dbSelect('SELECT * FROM Incidents WHERE case_number = ?', [req.body])
+//         .then((rows) => {
+//             if (rows.length === 0) {
+//                 res.status(500).type('txt').send('Case number not found');
+//             } else {
+//                 const sql = 'DELETE FROM Incidents WHERE case_number = ?';
+//                 dbRun(sql, [case_number])
+//                     .then(() => {
+//                         res.status(200).type('txt').send('OK');
+//                     })
+//                     .catch((error) => {
+//                         res.status(500).type('txt').send(error);
+//                     });
+//             }
+//         })
+//         .catch((error) => {
+//             res.status(500).type('txt').send(error);
+//         });
+// });
+
+
 app.delete('/remove-incident', (req, res) => {
-    dbSelect('SELECT * FROM Incidents WHERE case_number = ?', [req.body])
-        .then((rows) => {
-            if (rows.length === 0) {
-                res.status(500).type('txt').send('Case number not found');
-            } else {
-                const sql = 'DELETE FROM Incidents WHERE case_number = ?';
-                dbRun(sql, [case_number])
-                    .then(() => {
-                        res.status(200).type('txt').send('OK');
-                    })
-                    .catch((error) => {
-                        res.status(500).type('txt').send(error);
-                    });
-            }
+    console.log(req.body.case_number);
+    const sql = 'DELETE FROM Incidents WHERE case_number = ?';
+    dbRun(sql, req.body.case_number)
+        .then(() => {
+            res.status(200).type('txt').send('OK');
         })
         .catch((error) => {
             res.status(500).type('txt').send(error);
         });
 });
+
+
 
 /********************************************************************
  ***   START SERVER                                               *** 
