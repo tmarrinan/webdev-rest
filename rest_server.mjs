@@ -191,13 +191,13 @@ app.get('/incidents', (req, res) => {
     } else if (req.query.hasOwnProperty("end_date")) {
         end_date = req.query["end_date"]
         params.push(end_date)
-        sql += statm1 + " DATE(date_time) >= ?";
+        sql += statm1 + " DATE(date_time) <= ?";
         
         statm1 = " AND";
     } else if (req.query.hasOwnProperty("start_date")) {
         start_date = req.query["start_date"]
         params.push(start_date)
-        sql += statm1 + " DATE(date_time) <= ?";
+        sql += statm1 + " DATE(date_time) >= ?";
         
         statm1 = " AND";
     }
