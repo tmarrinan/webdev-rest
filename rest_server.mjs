@@ -6,7 +6,7 @@ import { default as sqlite3 } from 'sqlite3';
 
 const __dirname = path.dirname(url.fileURLToPath(import.meta.url));
 console.log(__dirname)
-const db_filename = path.join(__dirname, 'db', 'stpaul_crime - Copy.sqlite3');
+const db_filename = path.join(__dirname, 'db', 'stpaul_crime.sqlite3');
 console.log(db_filename)
 
 const port = 8000;
@@ -181,15 +181,23 @@ app.get('/incidents', (req, res) => {
     let start_date = '';
     let end_date = '';
     
-    if (req.query.hasOwnProperty("start_date")) {
+    if (req.query.hasOwnProperty("start_date")  && req.query.hasOwnProperty("end_date")) {
         start_date = req.query["start_date"];
         params.push(start_date);
-    }
-
-    if (req.query.hasOwnProperty("end_date")) {
         end_date = req.query["end_date"]
         params.push(end_date)
         sql += statm1 + " DATE(date_time) BETWEEN ? AND ?";
+        statm1 = " AND";
+    } else if (req.query.hasOwnProperty("end_date")) {
+        end_date = req.query["end_date"]
+        params.push(end_date)
+        sql += statm1 + " DATE(date_time) >= ?";
+        
+        statm1 = " AND";
+    } else if (req.query.hasOwnProperty("start_date")) {
+        start_date = req.query["start_date"]
+        params.push(start_date)
+        sql += statm1 + " DATE(date_time) <= ?";
         
         statm1 = " AND";
     }
