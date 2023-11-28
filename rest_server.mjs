@@ -175,9 +175,6 @@ app.get('/neighborhoods', (req, res) => {
 
 // GET request handler for crime incidents
 app.get('/incidents', (req, res) => {
-    console.log(req.query); // query object (key-value pairs after the ? in the url)
-    
-
     let sql = 'SELECT * FROM Incidents';
     let params = [];
     let statm1 = " WHERE";
@@ -194,6 +191,20 @@ app.get('/incidents', (req, res) => {
         params.push(end_date)
         sql += statm1 + " DATE(date_time) BETWEEN ? AND ?";
         
+        statm1 = " AND";
+    }
+
+    if (req.query.hasOwnProperty("code")) {
+        sql += statm1 + " code=?";
+        let code_list = req.query["code"].split(",");
+        code_list.forEach(code => {
+            code = code.trim()
+            params.push(parseInt(code));
+        });
+        for(let i=0; i<code_list.length-1; i++) {
+            sql += " OR code=?"
+        }
+        sql+="ORDER BY code"
         statm1 = " AND";
     }
 
@@ -229,17 +240,16 @@ app.get('/incidents', (req, res) => {
     }
 
     if (req.query.hasOwnProperty("limit")) {
-        sql += ` LIMIT ${parseInt(req.query["limit"])}`;
+        sql += ` ORDER BY date_time DESC LIMIT ${parseInt(req.query["limit"])}`;
         statm1= " AND";
     } else {
-        sql += ' LIMIT 1000';
+        sql += ' ORDER BY date_time DESC LIMIT 1000';
         statm1= " AND";
     }
 
 
 
     console.log(sql);
-    console.log(params);
 
     dbSelect(sql, params)
     .then((rows) => {
@@ -250,7 +260,6 @@ app.get('/incidents', (req, res) => {
             row['time']=date_time_list[1]
             delete row['date_time']
         })
-        console.log(rows)
         res.status(200).type('json').send(rows);
 
     })
@@ -289,7 +298,7 @@ app.put('/new-incident', (req, res) => {
     // INSERT INTO Customers (CustomerName, ContactName, Address, City, PostalCode, Country)
     // VALUES ('Cardinal', 'Tom B. Erichsen', 'Skagen 21', 'Stavanger', '4006', 'Norway');
     // VALUES ( ?, ?, ?, ?, ?, ?) 
-    
+
     dbRun(sql, params)
     .then(() => {
         res.status(200).type('txt').send('OK'); // <-- you may need to change this
@@ -302,9 +311,24 @@ app.put('/new-incident', (req, res) => {
 
 // DELETE request handler for new crime incident
 app.delete('/remove-incident', (req, res) => {
-    console.log(req.body); // uploaded data
-    
-    res.status(200).type('txt').send('OK'); // <-- you may need to change this
+    dbSelect('SELECT * FROM Incidents WHERE case_number = ?', [req.body])
+        .then((rows) => {
+            if (rows.length === 0) {
+                res.status(500).type('txt').send('Case number not found');
+            } else {
+                const sql = 'DELETE FROM Incidents WHERE case_number = ?';
+                dbRun(sql, [case_number])
+                    .then(() => {
+                        res.status(200).type('txt').send('OK');
+                    })
+                    .catch((error) => {
+                        res.status(500).type('txt').send(error);
+                    });
+            }
+        })
+        .catch((error) => {
+            res.status(500).type('txt').send(error);
+        });
 });
 
 /********************************************************************
