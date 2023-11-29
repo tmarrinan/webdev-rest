@@ -98,9 +98,8 @@ app.get('/neighborhoods', (req, res) => {
 
     let idSelections = req.query;
     let query = 'Select * FROM Neighborhoods';
-    let params = [];
+    let params = [String];
 
-    //If the user entered any values to filter query
     if (req.query.hasOwnProperty('neighborhood_number')) {
         idSelections = req.query.neighborhood_number.replace(/,/g, ' OR neighborhood_number = ');
         query += ' WHERE neighborhood_number = ';
@@ -109,7 +108,6 @@ app.get('/neighborhoods', (req, res) => {
 
     query += ' ORDER BY neighborhood_number';
 
-    //Select data from the database
     dbSelect(query, params)
     .then((rows) =>{
         const formattedRows = rows.map(row => ({ id: row.neighborhood_number, name: row.neighborhood_name }));
@@ -184,20 +182,18 @@ app.get('/incidents', (req, res) => {
 
 
 // PUT request handler for new crime incident
-app.put('/new-incident', (req, res) => {
-    const { case_number, date, incident, police_grid, neighborhood_number, block } = req.body;
+app.put('/new-incident/:case_number', (req, res) => {
+    const case_number = req.params.case_number; 
+    const { date_time, code, police_grid, neighborhood_number, block } = req.body;
 
-    // Check if all required fields are present in the request body
-    if (!case_number || !date || !incident || !police_grid || !neighborhood_number || !block) {
+    if (!date_time || !code || !police_grid || !neighborhood_number || !block) {
         res.status(400).json({ error: 'Missing required fields in the request body' });
         return;
     }
 
-    // Create the INSERT query
-    const query = 'INSERT INTO incidents (case_number, date, incident, police_grid, neighborhood_number, block) VALUES (?, ?, ?, ?, ?, ?)';
-    const params = [case_number, date, incident, police_grid, neighborhood_number, block];
+    const query = 'INSERT INTO incidents (case_number, date_time, code, police_grid, neighborhood_number, block) VALUES (?, ?, ?, ?, ?, ?)';
+    const params = [case_number, date_time, code, police_grid, neighborhood_number, block];
 
-    // Run the query to insert the new incident
     dbRun(query, params)
         .then(() => {
             res.status(200).json({ message: 'Incident added successfully' });
@@ -206,7 +202,9 @@ app.put('/new-incident', (req, res) => {
             res.status(500).json({ error: error.message });
         });
 });
+//curl -X PUT "http://localhost:8000/new-incident" -H "Content-Type: application/json" -d "{\"case_number\": 1234, \"date\": \"2023-11-13\", \"incident\": \"student mischieft\", \"police_grid\": 130, \"neighborhood_number\": 6, \"block\": \"2346 Random\"}"
 
+//curl -X PUT "http://localhost:8000/new-incident/1234" -H "Content-Type: application/json" -d '{"date_time": "2023-01-01T00:00:00", "code": 500, "police_grid": 117, "neighborhood_number": 1, "block": "your_block"}'
 
 
 
@@ -214,20 +212,22 @@ app.put('/new-incident', (req, res) => {
 
 // DELETE request handler for new crime incident
 app.delete('/remove-incident', async (req, res) => {
-    let query = 'DELETE FROM incidents WHERE case_number = ?';
-    console.log('Before dbRun');
+    const caseNumber = req.query.case_number;
+    let query = 'DELETE FROM Incidents WHERE case_number = ' + caseNumber;
+    let params = [];
+    console.log(query);
     dbRun(query, params)
         .then(() => {
-            console.log('Incident added successfully');
-            res.status(200).json({ message: 'Incident added successfully' });
+            console.log('Incident Removed successfully');
+            res.status(200).json({ message: 'Incident Removed successfully' });
         })
         .catch((error) => {
-            console.error('Error adding incident:', error.message);
+            console.error('Error Removing incident:', error.message);
             res.status(500).json({ error: error.message });
         });
-    console.log('After dbRun');    
+    console.log(params);    
 });
-
+//"http://localhost:8000/Remove-incident?case_number=14174423"
 
 
 
