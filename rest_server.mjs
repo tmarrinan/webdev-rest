@@ -212,7 +212,7 @@ app.get('/incidents', (req, res) => {
         for(let i=0; i<code_list.length-1; i++) {
             sql += " OR code=?"
         }
-        sql+="ORDER BY code"
+        // sql+="ORDER BY code"
         statm1 = " AND";
     }
 
