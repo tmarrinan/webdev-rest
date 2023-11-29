@@ -225,9 +225,8 @@ app.get('/incidents', (req, res) => {
             params.push(parseInt(grid));
         });
         for(let i=0; i<grid_list.length-1; i++) {
-            sql += " OR police_grid=?"
+            sql += " OR police_grid=? "
         }
-        sql+="ORDER BY police_grid"
         statm1 = " AND";
     }
 
@@ -243,7 +242,6 @@ app.get('/incidents', (req, res) => {
         for(let i=0; i<neighborhood_list.length-1; i++) {
             sql += " OR neighborhood_number=?";
         }
-        sql+="ORDER BY neighborhood_number";
         statm1 = " AND";
     }
 
