@@ -72,6 +72,16 @@ onMounted(() => {
 function initializeCrimes() {
     // TODO: get code and neighborhood data
     //       get initial 1000 crimes
+    console.log(crime_url.value);
+
+    
+    fetch("https://swapi.dev/api/people/1")
+    .then((response) => {
+        return response.json(); //we need to tell it how we want the result, which is in json
+    })
+    .then((json) => {
+        console.log(json)
+    });
 }
 
 // Function called when user presses 'OK' on dialog box
@@ -82,6 +92,7 @@ function closeDialog() {
         dialog_err.value = false;
         dialog.close();
         initializeCrimes();
+        console.log('valid');
     }
     else {
         dialog_err.value = true;

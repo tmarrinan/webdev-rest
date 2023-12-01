@@ -6,10 +6,13 @@
         "name": "catherinekieffer",
         "email": "kief4528@stthomas.edu"
     },
-    "contributors": [ "Catherine Kieffer", "Noah Friesen", "Jonny Demarais"
+    "contributors": [
+        "Catherine Kieffer",
+        "Noah Friesen",
+        "Jonny Demarais"
     ],
     "repository": {
-        "repository" : "https://github.com/catherinekieffer/webdev-rest"
+        "repository": "https://github.com/catherinekieffer/webdev-rest"
     },
     "scripts": {
         "dev": "vite",
@@ -17,6 +20,7 @@
         "preview": "vite preview"
     },
     "dependencies": {
+        "cors": "^2.8.5",
         "express": "^4.18.2",
         "sqlite3": "^5.1.6",
         "vue": "^3.3.4"
