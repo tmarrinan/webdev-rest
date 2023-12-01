@@ -2,6 +2,7 @@
 import { reactive, ref, onMounted } from 'vue'
 
 let crime_url = ref('');
+let table = reactive([]);
 let dialog_err = ref(false);
 let map = reactive(
     {
@@ -74,13 +75,27 @@ function initializeCrimes() {
     //       get initial 1000 crimes
     console.log(crime_url.value);
 
-    
-    fetch("https://swapi.dev/api/people/1")
+    fetch(crime_url.value+"/codes")
     .then((response) => {
         return response.json(); //we need to tell it how we want the result, which is in json
     })
     .then((json) => {
         console.log(json)
+
+        json.forEach((crime) => {
+            table.push({
+                code: crime.code,
+                // temperature: temp[index],
+                // wind_speed: wind_speed[index],
+                // wind_direction: wind_dir[index],
+                // weather_code: weather_code[index]
+            });
+        });
+        
+    })
+    .catch((error) => {
+        console.log("error")
+        console.log(error)
     });
 }
 
@@ -114,6 +129,39 @@ function closeDialog() {
             <div id="leafletmap" class="cell auto"></div>
         </div>
     </div>
+    <!-- <div class="grid-container ">
+        <div class="grid-x grid-padding-x">
+            <div id="table" class="cell auto"></div>
+        </div>
+    </div> -->
+
+
+    <table v-if="table.length > 0">
+        <thead>
+            <tr>
+                <th>Code</th>
+                <th>Temperature</th>
+                <th>Wind Speed</th>
+                <th>Wind Direction</th>
+                <th>Weather Code</th>
+            </tr>
+        </thead>
+        <tbody>
+            <!-- I want one weather row for every item in the forecase-->
+            <!-- to get the proper border, we need to put the css in the WeatherRow.vue -->
+            <!-- <WeatherRow v-for="item in table" :data="item"></WeatherRow> -->
+
+            <tr v-for="item in table">
+                <td>{{ item.code }}</td>
+                <!-- <td>{{ item.temperature.toFixed(0) }}&deg;F</td>
+                <td>{{ item.wind_speed.toFixed(1) }} mph</td>
+                <td>{{ getCardinalDirection(item.wind_direction) }}</td>
+                <td>{{ item.weather_code }}</td> -->
+            </tr>
+        </tbody>
+    </table>
+    
+    
 </template>
 
 <style>
