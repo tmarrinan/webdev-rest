@@ -159,7 +159,8 @@ app.get('/incidents', (req, res) => {
 
 
     //Set limit to user amount or 1000 (DONE)
-    if(req.query.hasOwnProperty('limit')){limit = req.query.limit;}
+    if(req.query.hasOwnProperty('limit')){
+        limit = req.query.limit;}
     query += " LIMIT " + limit;
 
 
