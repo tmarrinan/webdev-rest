@@ -67,6 +67,27 @@ onMounted(() => {
     });
 });
 
+function replaceIncompleteAddress(address) {
+  const addressParts = address.split(' ');
+
+  let addressNumberIndex = -1;
+  for (let i = 0; i < addressParts.length; i++) {
+    if (addressParts[i].includes('X')) {
+      addressNumberIndex = i;
+      break;
+    }
+  }
+
+  if (addressNumberIndex !== -1) {
+    addressParts[addressNumberIndex] = addressParts[addressNumberIndex].replace(/X/g, '0');
+  }
+
+  const updatedAddress = addressParts.join(' ');
+
+  return updatedAddress;
+}
+
+
 
 // FUNCTIONS
 // Function called once user has entered REST API URL
@@ -74,8 +95,41 @@ function initializeCrimes() {
     // TODO: get code and neighborhood data
     //       get initial 1000 crimes
     console.log(crime_url.value);
-
+    let code_map = {}
+    let neighborhood_map = {}
     fetch(crime_url.value+"/codes")
+    .then((response) => {
+        return response.json();
+    })
+    .then((json) => {
+
+        json.forEach((code_object) => {
+            code_map[code_object.code] = code_object.type
+        })
+        console.log(code_map)
+    })
+    .catch((error) => {
+        console.log("error")
+        console.log(error)
+    });
+
+    fetch(crime_url.value+"/neighborhoods")
+    .then((response) => {
+        return response.json();
+    })
+    .then((json) => {
+
+        json.forEach((neigh_object) => {
+            neighborhood_map[neigh_object.id] = neigh_object.name
+        })
+        console.log(neighborhood_map)
+    })
+    .catch((error) => {
+        console.log("error")
+        console.log(error)
+    });
+
+    fetch(crime_url.value+"/incidents")
     .then((response) => {
         return response.json(); //we need to tell it how we want the result, which is in json
     })
@@ -84,11 +138,14 @@ function initializeCrimes() {
 
         json.forEach((crime) => {
             table.push({
-                code: crime.code,
-                // temperature: temp[index],
-                // wind_speed: wind_speed[index],
-                // wind_direction: wind_dir[index],
-                // weather_code: weather_code[index]
+                case_number: crime.case_number,
+                incident_type: code_map[crime.code],
+                incident: crime.incident,
+                grid: crime.police_grid,
+                neighborhood: neighborhood_map[crime.neighborhood_number],
+                block: replaceIncompleteAddress(crime.block),
+                date: crime.date,
+                time: crime.time,
             });
         });
         
@@ -139,11 +196,14 @@ function closeDialog() {
     <table v-if="table.length > 0">
         <thead>
             <tr>
-                <th>Code</th>
-                <th>Temperature</th>
-                <th>Wind Speed</th>
-                <th>Wind Direction</th>
-                <th>Weather Code</th>
+                <th>case_number</th>
+                <th>incident_type</th>
+                <th>incident</th>
+                <th>police_grid</th>
+                <th>neighborhood_name</th>
+                <th>block</th>
+                <th>date</th>
+                <th>time</th>
             </tr>
         </thead>
         <tbody>
@@ -152,11 +212,14 @@ function closeDialog() {
             <!-- <WeatherRow v-for="item in table" :data="item"></WeatherRow> -->
 
             <tr v-for="item in table">
-                <td>{{ item.code }}</td>
-                <!-- <td>{{ item.temperature.toFixed(0) }}&deg;F</td>
-                <td>{{ item.wind_speed.toFixed(1) }} mph</td>
-                <td>{{ getCardinalDirection(item.wind_direction) }}</td>
-                <td>{{ item.weather_code }}</td> -->
+                <td>{{ item.case_number }}</td>
+                <td> {{ item.incident_type }}</td>
+                <td>{{ item.incident }}</td>
+                <td>{{ item.grid }}</td>
+                <td>{{ item.neighborhood }}</td>
+                <td>{{ item.block }}</td>
+                <td>{{ item.date }}</td>
+                <td>{{ item.time }}</td>
             </tr>
         </tbody>
     </table>
