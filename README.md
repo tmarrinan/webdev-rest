@@ -1,4 +1,18 @@
-# St. Paul Crime Database API
+# St. Paul Crime Database Explorer
+
+# App Setup
+
+Install Dependencies
+
+```bash
+npm install
+```
+
+Install SQLite3 Database: [St. Paul Crime Database] (https://stthomas.instructure.com/files/7974802/download?download_frd=1)
+
+# API Documentation
+
+---
 
 # GET requests
 
