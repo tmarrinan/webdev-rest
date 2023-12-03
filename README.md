@@ -1,6 +1,6 @@
 # St. Paul Crime Database Explorer
-
-# App Setup
+---
+## App Setup
 
 Install Dependencies
 
@@ -8,13 +8,23 @@ Install Dependencies
 npm install
 ```
 
-Install SQLite3 Database: [St. Paul Crime Database] (https://stthomas.instructure.com/files/7974802/download?download_frd=1)
+Run Backend:
+```bash
+npm run dev -- --port 8000
+```
+
+Run Frontend:
+```bash
+npm run dev -- --port 8001
+```
 
 # API Documentation
 
 ---
 
-# GET requests
+Install SQLite3 Database: [St. Paul Crime Database](https://stthomas.instructure.com/files/7974802/download?download_frd=1)
+
+## GET requests
 
 ### /codes
 
@@ -49,7 +59,7 @@ The following query parameters are supported:
 - `grid` - specifies which incidents to return based on police gird (e.g. `?grid=38,65`). _All police grids will returned by default_.
 - `neighboorhood` - specifies which incidents to return based on neighboorhood (e.g. `neighborhood=11,14`) _All neighboorhoods will be returned by default_.
 
-# PUT requests
+## PUT requests
 
 ### /new-incident
 
@@ -61,7 +71,7 @@ curl -X PUT "http://localhost:8000/new-incident" -H "Content-Type: application/j
 
 _A 500 error will be returned if the incident already exists._
 
-# DELETE requests
+## DELETE requests
 
 ### /remove-incident
 
