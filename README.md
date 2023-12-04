@@ -10,12 +10,12 @@ npm install
 
 Run Backend:
 ```bash
-npm run dev -- --port 8000
+node ./rest_server.mjs
 ```
 
 Run Frontend:
 ```bash
-npm run dev -- --port 8001
+npm run dev -- --port 8000
 ```
 
 # API Documentation
