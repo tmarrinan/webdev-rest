@@ -67,11 +67,21 @@ onMounted(() => {
 });
 
 
-// FUNCTIONS
+// FUNCTIONS http://localhost:8001/codes
 // Function called once user has entered REST API URL
 function initializeCrimes() {
     // TODO: get code and neighborhood data
     //       get initial 1000 crimes
+    fetch(crime_url.value)
+    .then((response) => {
+        return response.json();
+    })
+    .then((result) => {
+        console.log(result);
+    })
+    .catch((error) => {
+        console.log('Error:', error);
+    });
 }
 
 // Function called when user presses 'OK' on dialog box
@@ -113,6 +123,7 @@ function closeDialog() {
 }
 
 #leafletmap {
+    margin: 60px;
     height: 500px;
 }
 

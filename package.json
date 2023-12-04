@@ -7,18 +7,24 @@
         "email": "tran6854@stthomas.edu"
     },
     "contributors": [
-        "Francis Tran", "Matt Lao", "John Tran"
+        "Francis Tran",
+        "Matt Lao",
+        "John Tran"
     ],
-    "repository": {"webdev-rest":"https://github.com/tran6854/webdev-rest"},
+    "repository": {
+        "webdev-rest": "https://github.com/tran6854/webdev-rest"
+    },
     "scripts": {
         "dev": "vite",
         "build": "vite build",
         "preview": "vite preview"
     },
     "dependencies": {
+        "cors": "^2.8.5",
         "express": "^4.18.2",
         "sqlite3": "^5.1.6",
-        "vue": "^3.3.4"
+        "vue": "^3.3.4",
+        "vue-router": "^4.2.5"
     },
     "devDependencies": {
         "@vitejs/plugin-vue": "^4.4.0",
