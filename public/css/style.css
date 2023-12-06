@@ -8,3 +8,10 @@ html {
     width: 100%;
     height: 100%;
 }
+
+
+.uploadForm{
+    margin: 3em;
+    padding: 2em;
+    border: 4px solid black;
+}
