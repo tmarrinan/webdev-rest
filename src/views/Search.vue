@@ -15,6 +15,7 @@ let dialog_success = ref(false);
 
 let crime_url = ref('');
 let dialog_err = ref(false);
+let location = ref('');
 let map = reactive(
     {
         leaflet: null,
@@ -100,6 +101,11 @@ function initializeCrimes() {
 function closeDialog() {
     let dialog = document.getElementById('rest-dialog');
     let url_input = document.getElementById('dialog-url');
+    let loc_input = document.getElementById('dialog-loc');
+    if(loc_input.value !== ''){
+        locationTest(loc_input.value);
+    }
+    /*/
     if (crime_url.value !== '' && url_input.checkValidity()) {
         dialog_err.value = false;
         dialog.close();
@@ -108,6 +114,29 @@ function closeDialog() {
     else {
         dialog_err.value = true;
     }
+    //*/
+}
+
+//in search bar try "Frogtown, MN"
+function locationTest(loc){
+    let url = 'https://nominatim.openstreetmap.org/search?q='+loc+'&format=json&&limit=1';
+    fetch(url)
+    .then((response)=>{
+        return response.json();
+    })
+    .then((data)=>{
+        if(data.length > 0){
+            let lat = data[0].lat;
+            let lon = data[0].lon;
+            map.leaflet.setView([lat, lon], 14);
+        }else{
+            console.log("Not found");
+        }
+        console.log(data);
+    })
+    .catch((error)=>{
+        console.log('Error:', error);
+    });
 }
 
 //Upload incidents to database
@@ -146,11 +175,12 @@ function uploadIncidents(){
 <template>
     <dialog id="rest-dialog" open>
         <h1 class="dialog-header">St. Paul Crime REST API</h1>
-        <label class="dialog-label">URL: </label>
-        <input id="dialog-url" class="dialog-input" type="url" v-model="crime_url" placeholder="http://localhost:8000" />
+        <label class="dialog-label">Location: </label>
+        <!-- <input id="dialog-url" class="dialog-input" type="url" v-model="crime_url" placeholder="http://localhost:8000" /> -->
+        <input id="dialog-loc" class="dialog-input" v-model="location" placeholder="Enter a location" />
         <p class="dialog-error" v-if="dialog_err">Error: must enter valid URL</p>
         <br/>
-        <button class="button" type="button" @click="closeDialog">OK</button>
+        <button class="button" type="button" @click="closeDialog">GO</button>
     </dialog>
     <div class="grid-container ">
         <div class="grid-x grid-padding-x">
