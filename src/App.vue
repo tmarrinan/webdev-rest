@@ -1,5 +1,5 @@
 <script setup>
-import { reactive, ref, onMounted } from 'vue'
+import { reactive, ref, onMounted, initCustomFormatter } from 'vue'
 
 let crime_url = ref('');
 let table = reactive([]);
@@ -97,6 +97,7 @@ function initializeCrimes() {
     console.log(crime_url.value);
     let code_map = {}
     let neighborhood_map = {}
+    let crimes_num_table = {}
     fetch(crime_url.value+"/codes")
     .then((response) => {
         return response.json();
@@ -106,7 +107,6 @@ function initializeCrimes() {
         json.forEach((code_object) => {
             code_map[code_object.code] = code_object.type
         })
-        console.log(code_map)
     })
     .catch((error) => {
         console.log("error")
@@ -121,20 +121,22 @@ function initializeCrimes() {
 
         json.forEach((neigh_object) => {
             neighborhood_map[neigh_object.id] = neigh_object.name
+            crimes_num_table[neigh_object.name] = 0
         })
-        console.log(neighborhood_map)
+
+        console.log(crimes_num_table)
     })
     .catch((error) => {
         console.log("error")
         console.log(error)
     });
 
+
     fetch(crime_url.value+"/incidents")
     .then((response) => {
         return response.json(); //we need to tell it how we want the result, which is in json
     })
     .then((json) => {
-        console.log(json)
 
         json.forEach((crime) => {
             table.push({
@@ -148,12 +150,29 @@ function initializeCrimes() {
                 time: crime.time,
             });
         });
+
         
+        let test = []
+
+        json.forEach((crime) => {
+            test.push(crime)
+            Object.keys(crimes_num_table).forEach((neigh) => {
+                if(neighborhood_map[crime.neighborhood_number] == neigh) {
+                    crimes_num_table[neigh]++ 
+                }
+            })
+        })
+        
+        map.neighborhood_markers.forEach((marker, index) => {
+            L.marker(marker.location).addTo(map.leaflet).bindPopup(Object.values(crimes_num_table)[index].toString() + " Crimes").openPopup()
+        }) 
     })
     .catch((error) => {
         console.log("error")
         console.log(error)
     });
+
+    console.log(table)
 }
 
 // Function called when user presses 'OK' on dialog box
@@ -207,9 +226,6 @@ function closeDialog() {
             </tr>
         </thead>
         <tbody>
-            <!-- I want one weather row for every item in the forecase-->
-            <!-- to get the proper border, we need to put the css in the WeatherRow.vue -->
-            <!-- <WeatherRow v-for="item in table" :data="item"></WeatherRow> -->
 
             <tr v-for="item in table">
                 <td>{{ item.case_number }}</td>
