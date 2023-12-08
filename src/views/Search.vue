@@ -221,7 +221,7 @@ function uploadIncidents(){
     </form> 
 </template>
 
-<style>
+<style scoped>
 #rest-dialog {
     width: 20rem;
     margin-top: 1rem;
