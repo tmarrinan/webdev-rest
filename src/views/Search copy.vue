@@ -16,6 +16,14 @@ let dialog_success = ref(false);
 let crime_url = ref('');
 let dialog_err = ref(false);
 let location = ref('');
+
+let id = 0;
+const tags = ref([
+//   { id: id++, text: 'Learn HTML' },
+//   { id: id++, text: 'Learn JavaScript' },
+//   { id: id++, text: 'Learn Vue' }
+])
+
 let map = reactive(
     {
         leaflet: null,
@@ -104,6 +112,7 @@ function closeDialog() {
     let loc_input = document.getElementById('dialog-loc');
     if(loc_input.value !== ''){
         locationTest(loc_input.value);
+        dialog.close();
     }
     /*/
     if (crime_url.value !== '' && url_input.checkValidity()) {
@@ -137,6 +146,13 @@ function locationTest(loc){
     .catch((error)=>{
         console.log('Error:', error);
     });
+}
+
+function addTag(tag){
+    tags.push({id: id++, text: tag + "  x"});
+}
+function removeTag(tag){
+    tags.value = tags.value.filter((t) => t !== tag)
 }
 
 //Upload incidents to database
@@ -173,19 +189,48 @@ function uploadIncidents(){
 </script>
 
 <template>
-    <dialog id="rest-dialog" open>
+    <!-- <dialog id="rest-dialog" open>
         <h1 class="dialog-header">St. Paul Crime REST API</h1>
         <label class="dialog-label">Location: </label>
-        <!-- <input id="dialog-url" class="dialog-input" type="url" v-model="crime_url" placeholder="http://localhost:8000" /> -->
         <input id="dialog-loc" class="dialog-input" v-model="location" placeholder="Enter a location" />
         <p class="dialog-error" v-if="dialog_err">Error: must enter valid URL</p>
         <br/>
         <button class="button" type="button" @click="closeDialog">GO</button>
-    </dialog>
-    <div class="grid-container ">
-        <div class="grid-x grid-padding-x">
-            <div id="leafletmap" class="cell auto"></div>
+    </dialog> -->
+    
+    <div class="grid-container" style="padding: 0; margin-left: 0%; background-color: red; max-width: 100%;">
+        <div class="grid-x" style="background-color: yellow; margin: 0; padding: 0;">
+            <!-- might not need hardcoded height when all filters are added-->
+            <div id="rest-dialog" class="cell small-4 grid-container" style="background-color: green; margin: 0; padding:0;height: 500px;">
+                <div class="grid-container">
+                    <h1 class="dialog-header">St. Paul Crime REST API</h1>
+                    <div class="grid-y grid-margin-y">
+                        <label class="dialog-label">Location: </label>
+                        <input id="dialog-loc" class="dialog-input" v-model="location" placeholder="Enter a location" />
+                        <label for="filter1"></label>
+                        <div class="grid-x">
+                            <select id="filter1" class="cell small-4">
+                                <option value="none" selected disabled hidden>Select an Option</option> 
+                                <option value="a">a</option>
+                                <option value="b">b</option>
+                                <option value="c">c</option>
+                            </select>
+                            <button class="cell small-8" @click="addTag()" style="background-color: blue;">dasf</button>
+                        </div>
+                        <button class="button cell" type="button" @click="closeDialog">GO</button>
+                    </div>
+                </div>
+                <div class="cell small-12" style="margin:0; background-color: aquamarine; height: 150px;">
+                    <div v-for="tag in tags" :key="tag.id">
+                        <button @click="removeTag(tag)">{{ tag.text }}</button>
+                    </div>
+                </div>
+            </div>
+            <div class="cell small-8" style="background-color: blue;">
+                <div id="leafletmap"  style="margin:0; padding: 0; height: 100%;"></div>
+            </div>
         </div>
+        
     </div>
 
     <form class="uploadForm">

@@ -1,6 +1,7 @@
 import { createRouter, createWebHistory } from 'vue-router';
 import Home from '../views/Home.vue'
 import Search from '../views/Search.vue'
+import SearchTest from '../views/Search\ copy.vue'
 
 // 1. Define route components.
 // 2. Define some routes
@@ -9,6 +10,7 @@ import Search from '../views/Search.vue'
 const routes = [
   { path: '/', name: "Home", component: Home },
   { path: '/search', name: "Search", component: Search },
+  { path: '/searchT', name: "Search", component: SearchTest },
 ]
 
 // 3. Create the router instance and pass the `routes` option
