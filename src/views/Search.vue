@@ -1,5 +1,6 @@
 <script setup>
 import { reactive, ref, onMounted } from 'vue';
+import IncidentTable from '../components/IncidentTable.vue';
 
 let base_url = ref('http://localhost:8001');
 let dialog_err = ref(false);
@@ -158,7 +159,9 @@ function locationTest(loc){
         <div class="grid-x grid-padding-x">
             <div id="leafletmap" class="cell auto"></div>
         </div>
+        <IncidentTable :crimes="crimes" :codes="codes" :neighborhoods="neighborhoods"></IncidentTable>
     </div>
+    
 </template>
 
 <style scoped>
