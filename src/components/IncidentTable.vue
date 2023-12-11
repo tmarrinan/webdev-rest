@@ -10,10 +10,10 @@ defineProps(['crimes', 'codes', 'neighborhoods']);
                 <th>Case Number</th>
                 <th>Date</th>
                 <th>Time</th>
-                <th>Code</th>
-                <th>Incident</th>
+                <th>Incident Type</th>
+                <th>Description</th>
                 <th>Police Grid</th>
-                <th>Neighborhood Number</th>
+                <th>Neighborhood</th>
                 <th>Block</th>
             </tr>
         </thead>
