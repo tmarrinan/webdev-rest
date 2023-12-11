@@ -1,7 +1,7 @@
 <script setup>
 import { reactive, ref, onMounted } from 'vue';
 
-let endpoint_url = ref('http://localhost:8001');
+let base_url = ref('http://localhost:8001');
 let dialog_err = ref(false);
 let location = ref('');
 let crimes = reactive([]);
@@ -75,20 +75,20 @@ onMounted(() => {
 // Performs GET requests on /incident, /codes, /neightborhoods endpoints.
 // Sorts return data into their respective data models.
 function initializeCrimes() {
-    fetch(endpoint_url.value + "/incidents")
+    fetch(base_url.value + "/incidents")
     .then((response) => {
         return response.json();
     })
     .then((data) => {
         crimes = data;
-        return fetch(endpoint_url.value + "/codes");
+        return fetch(base_url.value + "/codes");
     })
     .then((response) => {
         return response.json();
     })
     .then((data) => {
         codes = data;
-        return fetch(endpoint_url.value + "/neighborhoods");
+        return fetch(base_url.value + "/neighborhoods");
     })
     .then((response) => {
         return response.json();
