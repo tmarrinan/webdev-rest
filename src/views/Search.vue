@@ -5,6 +5,7 @@ let endpoint_url = ref('http://localhost:8001');
 let dialog_err = ref(false);
 let location = ref('');
 let crimes = reactive([]);
+let codes = reactive([]);
 let map = reactive(
     {
         leaflet: null,
@@ -81,7 +82,13 @@ function initializeCrimes() {
     })
     .then((data) => {
         crimes = data;
-        console.log(crimes);
+        return fetch(endpoint_url.value + "/codes")
+    })
+    .then((response) => {
+        return response.json();
+    })
+    .then((data) => {
+        codes = data;
     })
     .catch((error) => {
         console.log('Error:', error);
