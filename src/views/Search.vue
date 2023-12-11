@@ -93,7 +93,7 @@ function closeDialog() {
     if(loc_input.value !== ''){
         locationTest(loc_input.value);
     }
-    /*/
+    //*/
     if (crime_url.value !== '' && url_input.checkValidity()) {
         dialog_err.value = false;
         dialog.close();

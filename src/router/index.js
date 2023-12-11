@@ -12,7 +12,7 @@ const routes = [
   { path: '/', name: "Home", component: Home },
   { path: '/search', name: "Search", component: Search },
   { path: '/upload', name: "Upload", component: Upload },
-  { path: '/searchT', name: "Search", component: SearchTest },
+  { path: '/searchT', name: "SearchT", component: SearchTest },
 ]
 
 // 3. Create the router instance and pass the `routes` option
