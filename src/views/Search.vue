@@ -5,9 +5,9 @@ import IncidentTable from '../components/IncidentTable.vue';
 let base_url = ref('http://localhost:8001');
 let dialog_err = ref(false);
 let location = ref('');
-let crimes = reactive([]);
-let codes = reactive([]);
-let neighborhoods = reactive([]);
+let crimes = ref([]);
+let codes = ref([]);
+let neighborhoods = ref([]);
 let map = reactive(
     {
         leaflet: null,
@@ -81,21 +81,21 @@ function initializeCrimes() {
         return response.json();
     })
     .then((data) => {
-        crimes = data;
+        crimes.value = data;
         return fetch(base_url.value + "/codes");
     })
     .then((response) => {
         return response.json();
     })
     .then((data) => {
-        codes = data;
+        codes.value = data;
         return fetch(base_url.value + "/neighborhoods");
     })
     .then((response) => {
         return response.json();
     })
     .then((data) => {
-        neighborhoods = data;
+        neighborhoods.value = data;
     })
     .catch((error) => {
         console.log('Error:', error);
@@ -146,19 +146,22 @@ function locationTest(loc){
 </script>
 
 <template>
+    <!---
     <dialog id="rest-dialog" open>
         <h1 class="dialog-header">St. Paul Crime REST API</h1>
         <label class="dialog-label">Location: </label>
-        <!-- <input id="dialog-url" class="dialog-input" type="url" v-model="crime_url" placeholder="http://localhost:8000" /> -->
+        <input id="dialog-url" class="dialog-input" type="url" v-model="crime_url" placeholder="http://localhost:8000" />
         <input id="dialog-loc" class="dialog-input" v-model="location" placeholder="Enter a location" />
         <p class="dialog-error" v-if="dialog_err">Error: must enter valid URL</p>
         <br/>
         <button class="button" type="button" @click="closeDialog">GO</button>
     </dialog>
+-->
     <div class="grid-container ">
         <div class="grid-x grid-padding-x">
             <div id="leafletmap" class="cell auto"></div>
         </div>
+
         <IncidentTable id="table" :crimes="crimes" :codes="codes" :neighborhoods="neighborhoods"></IncidentTable>
     </div>
     
