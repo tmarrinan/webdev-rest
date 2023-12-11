@@ -110,7 +110,7 @@ function closeDialog() {
     if(loc_input.value !== ''){
         locationTest(loc_input.value);
     }
-    /*/
+    //*/
     if (crime_url.value !== '' && url_input.checkValidity()) {
         dialog_err.value = false;
         dialog.close();
@@ -197,4 +197,5 @@ function locationTest(loc){
     font-size: 1rem;
     color: #D32323;
 }
+/**/
 </style>
