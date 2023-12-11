@@ -69,7 +69,7 @@ onMounted(() => {
     .catch((error) => {
         console.log('Error:', error);
     });
-    initializeCrimes();
+    initializeCrimes()
 });
 
 
@@ -159,7 +159,7 @@ function locationTest(loc){
         <div class="grid-x grid-padding-x">
             <div id="leafletmap" class="cell auto"></div>
         </div>
-        <IncidentTable :crimes="crimes" :codes="codes" :neighborhoods="neighborhoods"></IncidentTable>
+        <IncidentTable id="table" :crimes="crimes" :codes="codes" :neighborhoods="neighborhoods"></IncidentTable>
     </div>
     
 </template>
