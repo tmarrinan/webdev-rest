@@ -6,6 +6,7 @@ let dialog_err = ref(false);
 let location = ref('');
 let crimes = reactive([]);
 let codes = reactive([]);
+let neighborhoods = reactive([]);
 let map = reactive(
     {
         leaflet: null,
@@ -71,24 +72,29 @@ onMounted(() => {
 });
 
 
-// FUNCTIONS http://localhost:8001/codes
-// Function called once user has entered REST API URL
+// Performs GET requests on /incident, /codes, /neightborhoods endpoints.
+// Sorts return data into their respective data models.
 function initializeCrimes() {
-    // TODO: get code and neighborhood data
-    //       get initial 1000 crimes
     fetch(endpoint_url.value + "/incidents")
     .then((response) => {
         return response.json();
     })
     .then((data) => {
         crimes = data;
-        return fetch(endpoint_url.value + "/codes")
+        return fetch(endpoint_url.value + "/codes");
     })
     .then((response) => {
         return response.json();
     })
     .then((data) => {
         codes = data;
+        return fetch(endpoint_url.value + "/neighborhoods");
+    })
+    .then((response) => {
+        return response.json();
+    })
+    .then((data) => {
+        neighborhoods = data;
     })
     .catch((error) => {
         console.log('Error:', error);
