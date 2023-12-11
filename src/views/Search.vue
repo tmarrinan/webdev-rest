@@ -1,7 +1,7 @@
 <script setup>
 import { reactive, ref, onMounted } from 'vue'
 
-let crime_url = ref('');
+let crime_url = ref('http://localhost:8001/incidents');
 let dialog_err = ref(false);
 let location = ref('');
 let map = reactive(
@@ -65,6 +65,7 @@ onMounted(() => {
     .catch((error) => {
         console.log('Error:', error);
     });
+    initializeCrimes();
 });
 
 
