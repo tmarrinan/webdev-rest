@@ -16,13 +16,27 @@ let dialog_success = ref(false);
 let crime_url = ref('');
 let dialog_err = ref(false);
 let location = ref('');
+let addFilter1 = ref(true);
+let myRefs = {addFilter1: addFilter1};
 
 let id = 0;
-const tags = ref([
-//   { id: id++, text: 'Learn HTML' },
-//   { id: id++, text: 'Learn JavaScript' },
-//   { id: id++, text: 'Learn Vue' }
-])
+const tags = ref([]);
+
+let newTag = ref('');
+
+function addTag(filter){
+    if(newTag.value == ''){
+        return;
+    }
+    if(filter != null){
+        filter.value = false;
+    }
+
+    tags.value.push({id: id++, text: newTag.value});
+}
+function removeTag(tag){
+    tags.value = tags.value.filter((t) => t !== tag)
+}
 
 let map = reactive(
     {
@@ -148,12 +162,6 @@ function locationTest(loc){
     });
 }
 
-function addTag(tag){
-    tags.push({id: id++, text: tag + "  x"});
-}
-function removeTag(tag){
-    tags.value = tags.value.filter((t) => t !== tag)
-}
 
 //Upload incidents to database
 //TODO: check to see if the data already exist when submit a new one
@@ -207,22 +215,23 @@ function uploadIncidents(){
                     <div class="grid-y grid-margin-y">
                         <label class="dialog-label">Location: </label>
                         <input id="dialog-loc" class="dialog-input" v-model="location" placeholder="Enter a location" />
-                        <label for="filter1"></label>
                         <div class="grid-x">
-                            <select id="filter1" class="cell small-4">
-                                <option value="none" selected disabled hidden>Select an Option</option> 
+                            <select id="filter1" class="cell small-4" style="height: 2.6rem;" v-model="newTag" >
+                                <option value="" selected disabled hidden>Filter</option> 
                                 <option value="a">a</option>
                                 <option value="b">b</option>
                                 <option value="c">c</option>
                             </select>
-                            <button class="cell small-8" @click="addTag()" style="background-color: blue;">dasf</button>
+                            <button v-if="addFilter1" class="button cell small-2" type="button" @click="addTag(myRefs.addFilter1)" >+</button>
                         </div>
                         <button class="button cell" type="button" @click="closeDialog">GO</button>
                     </div>
                 </div>
-                <div class="cell small-12" style="margin:0; background-color: aquamarine; height: 150px;">
-                    <div v-for="tag in tags" :key="tag.id">
-                        <button @click="removeTag(tag)">{{ tag.text }}</button>
+                <div class="cell small-12" style="margin-top:1rem; padding: 1rem; background-color: aquamarine;">
+                    <div class="button tag-button"
+                        v-for="tag in tags" :key="tag.id" >
+                            {{ tag.text }}
+                            <button class="tag-close" @click="removeTag(tag)">X</button>
                     </div>
                 </div>
             </div>
