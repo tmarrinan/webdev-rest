@@ -1,18 +1,6 @@
 <script setup>
 import { reactive, ref, onMounted } from 'vue'
 
-//Incident upload variables
-let caseNum = ref();
-let dateI = ref();
-let timeI = ref();
-let code = ref();
-let IncidentName = ref();
-let Police_grid = ref();
-let NeighNum = ref();
-let AddressI = ref();
-let dialog_errIncidents = ref(false);
-let dialog_success = ref(false);
-
 let crime_url = ref('');
 let dialog_err = ref(false);
 let location = ref('');
@@ -138,38 +126,6 @@ function locationTest(loc){
         console.log('Error:', error);
     });
 }
-
-//Upload incidents to database
-//TODO: check to see if the data already exist when submit a new one
-function uploadIncidents(){
-    let formValues = {"case_number": caseNum.value, "date": dateI.value, "time": timeI.value, "code": code.value, "incident": IncidentName.value, "police_grid": Police_grid.value, "neighborhood_number": NeighNum.value, "block": AddressI.value};
-    console.log("stuff: "+ caseNum.value, dateI.value, timeI.value, code.value, IncidentName.value, Police_grid.value, NeighNum.value, AddressI.value);
-
-    let valueCheck = [caseNum.value, dateI.value, timeI.value, code.value, IncidentName.value, Police_grid.value, NeighNum.value, AddressI.value];
-    //check to see if one of them is undefined.
-    // curl -X PUT "http://localhost:8000/new-incident" -H "Content-Type: application/json" -d "{\"case_number\": 999999999, \"date\": \"2023-11-18\", \"time\": \"20:48:53\", \"code\": 23, \"incident\": \"Stole my heart\", \"police_grid\": 119, \"neighborhood_number\": 1, \"block\": \"4XX LUELLA ST\"}"
-    if (!valueCheck.includes(undefined)) {
-        dialog_errIncidents.value = false;
-        dialog_success.value = true;
-        const response = fetch('http://localhost:8001/new-incident', { 
-            method: 'PUT', 
-            headers: { 
-                'Content-type': 'application/json'
-            }, 
-            body: JSON.stringify(formValues) 
-        }); 
-            
-            // Awaiting response.json() 
-            const resData = response; 
-        
-            // Return response data  
-            return resData; 
-    }else{
-        dialog_errIncidents.value = true;
-        dialog_success.value = false;
-        //window.location.href = "https://www.youtube.com/watch?v=oHg5SJYRHA0";
-    }
-}
 </script>
 
 <template>
@@ -187,38 +143,6 @@ function uploadIncidents(){
             <div id="leafletmap" class="cell auto"></div>
         </div>
     </div>
-
-    <form class="uploadForm">
-        <h1>Upload Incidents</h1>
-        <p class="dialog-error" v-if="dialog_errIncidents">Error: One or more inputs are not filled in.</p>
-        <p class="dialog-success" v-if="dialog_success" style="color: green">Success!</p>
-        <label for="caseNum">Case Number:</label><br>
-        <input type="number" id="caseNum" name="caseNum" minlength="8" maxlength="8" required v-model="caseNum"><br>
-
-        <label for="date">Date of Incident:</label><br>
-        <input type="date" id="date" name="date" required v-model="dateI"><br>
-
-        <label for="time">Time of Incident:</label><br>
-        <input type="time" id="time" name="time" required v-model="timeI"><br>
-
-        <label for="code">Code:</label><br>
-        <input type="number" id="code" name="code" required v-model="code"><br>
-
-        <label for="Incident">What was the Incident?:</label><br>
-        <input type="text" id="Incident" name="Incident" required v-model="IncidentName"><br>
-
-        <label for="Police_grid">Police_grid:</label><br>
-        <input type="number" id="Police_grid" name="Police_grid" required v-model="Police_grid"><br>
-
-        <label for="neighborhoodNum">Neighborhood Number:</label><br>
-        <input type="number" id="neighborhoodNum" name="neighborhoodNum" required v-model="NeighNum"><br>
-
-        <label for="address">Address of the Incident taken place:</label><br>
-        <input type="text" id="address" name="address" required v-model="AddressI"><br>
-
-        <button class="button" type="button" @click="uploadIncidents">Upload</button>
-
-    </form> 
 </template>
 
 <style scoped>

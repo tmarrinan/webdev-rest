@@ -5,8 +5,7 @@
                 <li class="menu-text"><span class="locationIcon"><ion-icon name="location"></ion-icon></span>CRIME MN</li>
                 <li><router-link to="/" class="navButton">Home</router-link></li>
                 <li><router-link to="/Search" class="navButton">Search</router-link></li>
-                <!-- Change Later -->
-                <li><router-link to="/Search" class="navButton">Resource</router-link></li>
+                <li><router-link to="/upload" class="navButton">Upload</router-link></li>
             </ul>
         </div>
     </div>
@@ -24,7 +23,7 @@
 }
 
 .navButton:hover{
-    color: teal;
+    color: rgba(0, 183, 255);
 }
 
 </style>

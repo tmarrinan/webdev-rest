@@ -39,51 +39,161 @@
 
 
 
-    <section class="grid-x grid-margin-x">
-		<div class="cell crimeSectionTitle">
-			<h4>Our Developers</h4>
-		</div>
+    <section class="grid-container">
+        <div class="grid-x grid-margin-x">
+            <div class="cell tooltitle">
+                <h4>Did you know?</h4>
+            </div>
+            <div class="cell sliderFact">
+                <div id="slider">
+                    <input type="radio" name="slider" id="slide1" checked>
+                    <input type="radio" name="slider" id="slide2">
+                    <input type="radio" name="slider" id="slide3">
+                    <input type="radio" name="slider" id="slide4">
+                    <input type="radio" name="slider" id="slide5">
+                    <input type="radio" name="slider" id="slide6">
+                    <div id="slides">
+                        <div id="overflow">
+                            <div class="inner">
 
+                                <div class="slide slide_1 grid-container">
+                                    <div class="slide-content grid-x grid-margin-x">
+                                        <div class="cell medium-5">
+                                            <img src="https://s1.zerochan.net/Miles.%22Tails%22.Prower.600.2244411.jpg" width="300px" height="300px" />
+                                        </div>
+                                        <div class="cell medium-7">
+                                            <h2>Tails</h2>
+                                            <p>Lorem ipsum dolor sit amet consectetur adipisicing elit. Eos nemo laboriosam id architecto autem natus et quo tempore? Minus distinctio omnis exercitationem veniam cumque nihil expedita modi atque natus alias!</p>
+                                        </div>
+                                    </div>
+                                </div>
 
+                                <div class="slide slide_2 grid-container">
+                                    <div class="slide-content grid-x grid-margin-x">
+                                        <div class="cell medium-5">
+                                            <img src="https://www.icegif.com/wp-content/uploads/2023/01/icegif-162.gif" width="300px" height="300px" />
+                                        </div>
+                                        <div class="cell medium-7">
+                                            <h2>Tails</h2>
+                                            <p>Lorem ipsum dolor sit amet consectetur adipisicing elit. Eos nemo laboriosam id architecto autem natus et quo tempore? Minus distinctio omnis exercitationem veniam cumque nihil expedita modi atque natus alias!</p>
+                                        </div>
+                                    </div>
+                                </div>
 
-			<!--List of Contributors-->
-        <div class="cell">
-            <div class="profiles">
+                                <div class="slide slide_3 grid-container">
+                                    <div class="slide-content grid-x grid-margin-x">
+                                        <div class="cell medium-5">
+                                            <img src="https://s1.zerochan.net/Miles.%22Tails%22.Prower.600.2244411.jpg" width="300px" height="300px" />
+                                        </div>
+                                        <div class="cell medium-7">
+                                            <h2>Tails</h2>
+                                            <p>Lorem ipsum dolor sit amet consectetur adipisicing elit. Eos nemo laboriosam id architecto autem natus et quo tempore? Minus distinctio omnis exercitationem veniam cumque nihil expedita modi atque natus alias!</p>
+                                        </div>
+                                    </div>
+                                </div>
 
-                <div class="profile">
-                    <img src="https://media.tenor.com/_4YgA77ExHEAAAAd/rick-roll.gif"
-                    class="profile-img" draggable="false" loading="lazy"/>
-                    <h3 class="user-name">Francis T.</h3>
-                    <h5>Group Member</h5>
-                </div>
+                                <div class="slide slide_4 grid-container">
+                                    <div class="slide-content grid-x grid-margin-x">
+                                        <div class="cell medium-5">
+                                            <img src="https://www.icegif.com/wp-content/uploads/2023/01/icegif-162.gif" width="300px" height="300px" />
+                                        </div>
+                                        <div class="cell medium-7">
+                                            <h2>Tails</h2>
+                                            <p>Lorem ipsum dolor sit amet consectetur adipisicing elit. Eos nemo laboriosam id architecto autem natus et quo tempore? Minus distinctio omnis exercitationem veniam cumque nihil expedita modi atque natus alias!</p>
+                                        </div>
+                                    </div>
+                                </div>
 
+                                <div class="slide slide_5 grid-container">
+                                    <div class="slide-content grid-x grid-margin-x">
+                                        <div class="cell medium-5">
+                                            <img src="https://s1.zerochan.net/Miles.%22Tails%22.Prower.600.2244411.jpg" width="300px" height="300px" />
+                                        </div>
+                                        <div class="cell medium-7">
+                                            <h2>Tails</h2>
+                                            <p>Lorem ipsum dolor sit amet consectetur adipisicing elit. Eos nemo laboriosam id architecto autem natus et quo tempore? Minus distinctio omnis exercitationem veniam cumque nihil expedita modi atque natus alias!</p>
+                                        </div>
+                                    </div>
+                                </div>
 
-                <div class="profile">
-                    <img src="https://media.tenor.com/_4YgA77ExHEAAAAd/rick-roll.gif"
-                    class="profile-img" draggable="false" loading="lazy"/>
-                    <h3 class="user-name">John T.</h3>
-                    <h5>Group Member</h5>
-                </div>
+                                <div class="slide slide_6 grid-container">
+                                    <div class="slide-content grid-x grid-margin-x">
+                                        <div class="cell medium-5">
+                                            <img src="https://www.icegif.com/wp-content/uploads/2023/01/icegif-162.gif" width="300px" height="300px" />
+                                        </div>
+                                        <div class="cell medium-7">
+                                            <h2>Tails</h2>
+                                            <p>Lorem ipsum dolor sit amet consectetur adipisicing elit. Eos nemo laboriosam id architecto autem natus et quo tempore? Minus distinctio omnis exercitationem veniam cumque nihil expedita modi atque natus alias!</p>
+                                        </div>
+                                    </div>
+                                </div>
 
-
-                <div class="profile">
-                    <img src="https://media.tenor.com/_4YgA77ExHEAAAAd/rick-roll.gif"
-                    class="profile-img" draggable="false" loading="lazy"/>
-                    <h3 class="user-name">Matt L.</h3>
-                    <h5>Group Member</h5>
-                </div>
-
-
-                <div class="profile">
-                    <img src="https://media.tenor.com/_4YgA77ExHEAAAAd/rick-roll.gif"
-                    class="profile-img" draggable="false" loading="lazy"/>
-                    <h3 class="user-name">Tommy M.</h3>
-                    <h5>CS Professor</h5>
+                            </div>
+                        </div>
+                    </div>
+                    <div id="bullets">
+                        <label for="slide1"></label>
+                        <label for="slide2"></label>
+                        <label for="slide3"></label>
+                        <label for="slide4"></label>
+                        <label for="slide5"></label>
+                        <label for="slide6"></label>
+                    </div>
                 </div>
             </div>
+
         </div>
+    </section>
 
 
+
+
+    <section class="grid-container">
+        <div class="grid-x grid-margin-x">
+            <div class="cell crimeSectionTitle">
+                <h4>Our Developers</h4>
+            </div>
+
+
+
+            <!--List of Contributors-->
+            <div class="cell">
+                <div class="profiles">
+
+                    <div class="profile">
+                        <img src="https://avatars.githubusercontent.com/u/123771828?v=4"
+                        class="profile-img" draggable="false" loading="lazy"/>
+                        <h3 class="user-name">Francis T.</h3>
+                        <h5>Group Member</h5>
+                    </div>
+
+
+                    <div class="profile">
+                        <img src="https://avatars.githubusercontent.com/u/123798873?v=4"
+                        class="profile-img" draggable="false" loading="lazy"/>
+                        <h3 class="user-name">John T.</h3>
+                        <h5>Group Member</h5>
+                    </div>
+
+
+                    <div class="profile">
+                        <img src="https://avatars.githubusercontent.com/u/124289027?v=4"
+                        class="profile-img" draggable="false" loading="lazy"/>
+                        <h3 class="user-name">Matt L.</h3>
+                        <h5>Group Member</h5>
+                    </div>
+
+
+                    <div class="profile">
+                        <img src="https://tmarrinan.github.io/images/home/cover_photo_02.jpg"
+                        class="profile-img" draggable="false" loading="lazy"/>
+                        <h3 class="user-name">Tommy M.</h3>
+                        <h5>CS Professor</h5>
+                    </div>
+                </div>
+            </div>
+
+        </div>
 	</section>
 
 
@@ -131,8 +241,9 @@
     margin-bottom: 3rem;
 }
 iframe{
-    box-shadow: 40px -16px teal;
-    border: 3px solid rgb(0, 145, 255)
+    box-shadow: 0px 0px 21px 21px rgba(0, 183, 255, 0.22),
+0px 5px 14px 0px rgb(0, 191, 255);
+    border: 5px solid rgb(0, 0, 0)
 }
 
 
@@ -155,8 +266,8 @@ iframe{
     text-align: center;
 }
 .tools img{
-    padding: 1rem;
-    width: 8rem;
+    margin: 3rem;
+    width: 9rem;
 }
 
 
@@ -203,8 +314,8 @@ iframe{
     border: 5px solid black;
 }
 .profile img{
-    -webkit-filter: grayscale(100%); /* Safari 6.0 - 9.0 */
-    filter: grayscale(100%);
+    /* -webkit-filter: grayscale(100%);
+    filter: grayscale(100%); */
     object-fit: cover;
 }
 
@@ -266,4 +377,109 @@ iframe{
         margin: 20px 0;
     }
 }
+
+
+
+
+/* https://www.youtube.com/watch?v=1CZhGDU5cWM */
+#slider {
+   width: 100%;
+   display: block;
+}
+#slider input[type=radio] {
+   display: none;
+}
+#slider label {
+   cursor: pointer;
+   text-decoration: none;
+}
+#slides {
+    border: 3px solid #ccc;
+}
+#overflow {
+    display: block;
+    overflow: hidden;
+}
+#slide1:checked ~ #slides .inner {
+   margin-left: 0;
+}
+#slide2:checked ~ #slides .inner {
+   margin-left: -100%;
+}
+#slide3:checked ~ #slides .inner {
+   margin-left: -200%;
+}
+#slide4:checked ~ #slides .inner {
+   margin-left: -300%;
+}
+#slide5:checked ~ #slides .inner {
+   margin-left: -400%;
+}
+#slide6:checked ~ #slides .inner {
+   margin-left: -500%;
+}
+
+
+
+/* Debug */
+/*/
+#slides .slide_1 {
+   background: #00171F;
+}
+#slides .slide_2 {
+   background: #003459;
+}
+#slides .slide_3 {
+   background: #007EA7;
+}
+#slides .slide_4 {
+   background: #00A8E8;
+}
+#slides .slide_5 {
+   background: #00171F;
+}
+#slides .slide_6 {
+   background: #0095ff;
+} 
+/*/
+
+
+
+#slides .inner {
+   transition: margin-left 800ms cubic-bezier(0.770, 0.000, 0.175, 1.000);
+   width: 666.7%;
+   line-height: 0;
+}
+#slides .slide {
+   width: 15%;
+   display: flex;
+   float: left;
+   color: #fff;
+}
+
+.slide-content{
+    color: black;
+}
+
+#bullets {
+   margin-top: 1em;
+   text-align: center;
+}
+#bullets label {
+   display: inline-block;
+   width: .9em;
+   height: .9em;
+   border-radius: 100%;
+   background: #ccc;
+   margin: 0 .7em;
+}
+#slide1:checked ~ #bullets label:nth-child(1),
+#slide2:checked ~ #bullets label:nth-child(2),
+#slide3:checked ~ #bullets label:nth-child(3),
+#slide4:checked ~ #bullets label:nth-child(4),
+#slide5:checked ~ #bullets label:nth-child(5),
+#slide6:checked ~ #bullets label:nth-child(6) {
+   background: #444;
+}
+
 </style>
