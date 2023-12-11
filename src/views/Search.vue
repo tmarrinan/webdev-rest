@@ -1,9 +1,10 @@
 <script setup>
-import { reactive, ref, onMounted } from 'vue'
+import { reactive, ref, onMounted } from 'vue';
 
-let crime_url = ref('http://localhost:8001/incidents');
+let endpoint_url = ref('http://localhost:8001');
 let dialog_err = ref(false);
 let location = ref('');
+let crimes = reactive([]);
 let map = reactive(
     {
         leaflet: null,
@@ -74,12 +75,13 @@ onMounted(() => {
 function initializeCrimes() {
     // TODO: get code and neighborhood data
     //       get initial 1000 crimes
-    fetch(crime_url.value)
+    fetch(endpoint_url.value + "/incidents")
     .then((response) => {
         return response.json();
     })
-    .then((result) => {
-        console.log(result);
+    .then((data) => {
+        crimes = data;
+        console.log(crimes);
     })
     .catch((error) => {
         console.log('Error:', error);
