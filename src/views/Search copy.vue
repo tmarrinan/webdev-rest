@@ -1,21 +1,16 @@
 <script setup>
 import { reactive, ref, onMounted } from 'vue'
+import IncidentTable from '../components/IncidentTable.vue';
 
-//Incident upload variables
-let caseNum = ref();
-let dateI = ref();
-let timeI = ref();
-let code = ref();
-let IncidentName = ref();
-let Police_grid = ref();
-let NeighNum = ref();
-let AddressI = ref();
-let dialog_errIncidents = ref(false);
-let dialog_success = ref(false);
-
-let crime_url = ref('');
+let base_url = ref('http://localhost:8001');
 let dialog_err = ref(false);
 let location = ref('');
+
+// data models
+let crimes = ref([]);
+let codes = ref([]);
+let neighborhoods = ref([]);
+
 let addFilter1 = ref(true);
 let myRefs = {addFilter1: addFilter1};
 
@@ -100,6 +95,8 @@ onMounted(() => {
         console.log('Error:', error);
     });
 
+    initializeCrimes();
+
     map.neighborhood_markers.forEach((marker) => {
         L.marker(marker.location).addTo(map.leaflet).bindPopup(
             marker.marker + " Crimes: "
@@ -108,17 +105,29 @@ onMounted(() => {
 });
 
 
-// FUNCTIONS http://localhost:8001/codes
-// Function called once user has entered REST API URL
+// Performs GET requests on /incident, /codes, /neightborhoods endpoints.
+// Sorts return data into their respective data models.
 function initializeCrimes() {
-    // TODO: get code and neighborhood data
-    //       get initial 1000 crimes
-    fetch(crime_url.value)
+    fetch(base_url.value + "/incidents")
     .then((response) => {
         return response.json();
     })
-    .then((result) => {
-        console.log(result);
+    .then((data) => {
+        crimes.value = data;
+        return fetch(base_url.value + "/codes");
+    })
+    .then((response) => {
+        return response.json();
+    })
+    .then((data) => {
+        codes.value = data;
+        return fetch(base_url.value + "/neighborhoods");
+    })
+    .then((response) => {
+        return response.json();
+    })
+    .then((data) => {
+        neighborhoods.value = data;
     })
     .catch((error) => {
         console.log('Error:', error);
@@ -247,7 +256,7 @@ function uploadIncidents(){
         </div>
         
     </div>
-
+    <IncidentTable id="table" :crimes="crimes" :codes="codes" :neighborhoods="neighborhoods"></IncidentTable>
     <form class="uploadForm">
         <h1>Upload Incidents</h1>
         <p class="dialog-error" v-if="dialog_errIncidents">Error: One or more inputs are not filled in.</p>
