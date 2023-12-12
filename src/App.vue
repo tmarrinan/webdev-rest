@@ -189,6 +189,48 @@ function closeDialog() {
         dialog_err.value = true;
     }
 }
+
+// This function moves the map to the location specified 
+function pressGo() {
+    // pull all inputs in from the boxes 
+    var address = document.getElementById("address").value;
+    var latitude = document.getElementById("latitude").value;
+    var longitude = document.getElementById("longitude").value;
+    if (address.trim() !== "") { // see if an address was entered
+        address = address.replaceAll(" ", '+'); // change spaces to pluses
+        // console.log(address)
+        var baseUrl = "https://nominatim.openstreetmap.org/search?q="
+        var fetchUrl = baseUrl+address+"&format=json&polygon=1&addressdetails=1";
+        // console.log(fetchUrl);
+
+        fetch(fetchUrl)
+        .then((response) => {
+            return response.json();
+        })
+        .then((json) => {
+
+            var newCenter = L.latLng(json[0].lat, json[0].lon);
+            map.leaflet.setView(newCenter, 14, { animate: true }); // move the map to the new center and zoom in
+        });
+    } else if (latitude.trim() !== "" && longitude.trim() !== "") {
+        console.log("both lat and long are entred");
+        var fetchUrl = "https://nominatim.openstreetmap.org/reverse?format=json&lat="+latitude+"&lon="+longitude;
+        
+        fetch(fetchUrl)
+        .then((response) => {
+            return response.json();
+        })
+        .then((json) => {
+            console.log(json);
+            var location = json.display_name;
+            console.log(location);
+            //should we update the address box with this display name?
+            map.leaflet.setView([latitude, longitude], 14, { animate: true }); // move the map to the new center and zoom in
+        });
+
+    }
+}
+
 </script>
 
 <template>
@@ -205,11 +247,24 @@ function closeDialog() {
             <div id="leafletmap" class="cell auto"></div>
         </div>
     </div>
-    <!-- <div class="grid-container ">
-        <div class="grid-x grid-padding-x">
-            <div id="table" class="cell auto"></div>
-        </div>
-    </div> -->
+
+    <div class="ui-row">
+        <label>Address: </label><input id="address" type="text">
+    </div>
+
+    <!-- should I add a new thing for lat/long? and then depending on what is filled in do that? what if the user types some in both? -->
+    <div class="ui-row">
+        <label>Latitude: </label><input id="latitude" type="text">
+    </div>
+    <div class="ui-row">
+        <label>Longitude: </label><input id="longitude" type="text">
+    </div>
+
+    <div class="ui-row">
+        <button class="button" type="button" @click="pressGo">Go</button>
+    </div>
+
+
 
 
     <table v-if="table.length > 0">
@@ -271,5 +326,10 @@ function closeDialog() {
 .dialog-error {
     font-size: 1rem;
     color: #D32323;
+}
+
+.ui-row {
+    display: inline-block;
+    margin-right: 15px; /* Adjust spacing between input boxes */
 }
 </style>
