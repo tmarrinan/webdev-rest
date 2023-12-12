@@ -99,8 +99,12 @@ onMounted(() => {
     initializeCrimes()
     .then(() => {
         map.neighborhood_markers.forEach((marker) => {
-        L.marker(marker.location).addTo(map.leaflet).bindPopup(
-            `${getNeighborhoodNameById(marker.number, neighborhoods.value)}`
+            let marker_name = getNeighborhoodNameById(marker.number, neighborhoods.value);
+            let marker_crimes = calculateCrimes(marker_name, crimes.value, neighborhoods.value);
+            L.marker(marker.location).addTo(map.leaflet).bindPopup(
+                `${marker_name}` +
+                ': ' +
+                `${marker_crimes}`
         );
     });
     })
@@ -174,6 +178,16 @@ function getNeighborhoodNameById(id, neighborhoods) {
     // finds json object for id passed
     const neighborhood = neighborhoods.find(i => i.id === id);
     return neighborhood ? neighborhood.name : null;
+}
+
+function calculateCrimes(name, crimes, neighborhoods) {
+    let crime_count = 0
+    crimes.forEach((crime) => {
+        if (getNeighborhoodNameById(crime.neighborhood_number, neighborhoods) === name) {
+            crime_count++;
+        }
+    })
+    return crime_count; 
 }
 </script>
 
