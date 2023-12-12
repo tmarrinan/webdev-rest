@@ -95,6 +95,7 @@ onMounted(() => {
         console.log('Error:', error);
     });
 
+    // Draw markers once data is fetched
     initializeCrimes()
     .then(() => {
         map.neighborhood_markers.forEach((marker) => {
@@ -109,10 +110,7 @@ onMounted(() => {
     
 });
 
-async function fetchJson(url) {
-    return fetch(url).then(response => response.json());
-}
-
+// Fetches data from crime API and populates respective data models
 async function initializeCrimes() {
     return Promise.all([
         fetchJson(base_url.value + "/incidents"),
@@ -123,6 +121,10 @@ async function initializeCrimes() {
         codes.value = data[1];
         neighborhoods.value = data[2];
     });
+}
+
+async function fetchJson(url) {
+    return fetch(url).then(response => response.json());
 }
 
 // Function called when user presses 'OK' on dialog box
