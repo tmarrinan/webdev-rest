@@ -1,9 +1,23 @@
 <script setup>
-import { reactive, ref, onMounted } from 'vue'
+import { reactive, ref, onMounted } from 'vue';
+import IncidentTable from '../components/IncidentTable.vue';
 
-let crime_url = ref('');
+let base_url = ref('http://localhost:8001');
 let dialog_err = ref(false);
 let location = ref('');
+
+// data models
+let crimes = ref([]);
+let codes = ref([]);
+let neighborhoods = ref([]);
+
+// filter vars
+let addFilter1 = ref(true);
+let myRefs = {addFilter1: addFilter1};
+let id = 0;
+const tags = ref([]);
+let newTag = ref('');
+
 let map = reactive(
     {
         leaflet: null,
@@ -18,23 +32,23 @@ let map = reactive(
             se: {lat: 44.883658, lng: -92.993787}
         },
         neighborhood_markers: [
-            {location: [44.942068, -93.020521], marker: null},
-            {location: [44.977413, -93.025156], marker: null},
-            {location: [44.931244, -93.079578], marker: null},
-            {location: [44.956192, -93.060189], marker: null},
-            {location: [44.978883, -93.068163], marker: null},
-            {location: [44.975766, -93.113887], marker: null},
-            {location: [44.959639, -93.121271], marker: null},
-            {location: [44.947700, -93.128505], marker: null},
-            {location: [44.930276, -93.119911], marker: null},
-            {location: [44.982752, -93.147910], marker: null},
-            {location: [44.963631, -93.167548], marker: null},
-            {location: [44.973971, -93.197965], marker: null},
-            {location: [44.949043, -93.178261], marker: null},
-            {location: [44.934848, -93.176736], marker: null},
-            {location: [44.913106, -93.170779], marker: null},
-            {location: [44.937705, -93.136997], marker: null},
-            {location: [44.949203, -93.093739], marker: null}
+            {location: [44.942068, -93.020521], number: 1},
+            {location: [44.977413, -93.025156], number: 2},
+            {location: [44.931244, -93.079578], number: 3},
+            {location: [44.956192, -93.060189], number: 4},
+            {location: [44.978883, -93.068163], number: 5},
+            {location: [44.975766, -93.113887], number: 6},
+            {location: [44.959639, -93.121271], number: 7},
+            {location: [44.947700, -93.128505], number: 8},
+            {location: [44.930276, -93.119911], number: 9},
+            {location: [44.982752, -93.147910], number: 10},
+            {location: [44.963631, -93.167548], number: 11},
+            {location: [44.973971, -93.197965], number: 12},
+            {location: [44.949043, -93.178261], number: 13},
+            {location: [44.934848, -93.176736], number: 14},
+            {location: [44.913106, -93.170779], number: 15},
+            {location: [44.937705, -93.136997], number: 16},
+            {location: [44.949203, -93.093739], number: 17}
         ]
     }
 );
@@ -65,24 +79,57 @@ onMounted(() => {
     .catch((error) => {
         console.log('Error:', error);
     });
+
+    // Draw markers once data is fetched
+    initializeCrimes()
+    .then(() => {
+        map.neighborhood_markers.forEach((marker) => {
+            let marker_name = getNeighborhoodNameById(marker.number, neighborhoods.value);
+            let marker_crimes = calculateCrimes(marker_name, crimes.value, neighborhoods.value);
+            L.marker(marker.location).addTo(map.leaflet).bindPopup(
+                `${marker_name}` +
+                ': ' +
+                `${marker_crimes}`
+        );
+    });
+    })
+    .catch(error => {
+            console.log('Error:', error);
+    });
+    
 });
 
-
-// FUNCTIONS http://localhost:8001/codes
-// Function called once user has entered REST API URL
-function initializeCrimes() {
-    // TODO: get code and neighborhood data
-    //       get initial 1000 crimes
-    fetch(crime_url.value)
-    .then((response) => {
-        return response.json();
-    })
-    .then((result) => {
-        console.log(result);
-    })
-    .catch((error) => {
-        console.log('Error:', error);
+// Fetches data from crime API and populates respective data models
+async function initializeCrimes() {
+    return Promise.all([
+        fetchJson(base_url.value + "/incidents"),
+        fetchJson(base_url.value + "/codes"),
+        fetchJson(base_url.value + "/neighborhoods")
+    ]).then(data => {
+        crimes.value = data[0];
+        codes.value = data[1];
+        neighborhoods.value = data[2];
     });
+}
+
+async function fetchJson(url) {
+    return fetch(url).then(response => response.json());
+}
+
+function getNeighborhoodNameById(id, neighborhoods) {
+    // finds json object for id passed
+    const neighborhood = neighborhoods.find(i => i.id === id);
+    return neighborhood ? neighborhood.name : null;
+}
+
+function calculateCrimes(name, crimes, neighborhoods) {
+    let crime_count = 0
+    crimes.forEach((crime) => {
+        if (getNeighborhoodNameById(crime.neighborhood_number, neighborhoods) === name) {
+            crime_count++;
+        }
+    })
+    return crime_count; 
 }
 
 // Function called when user presses 'OK' on dialog box
@@ -92,8 +139,9 @@ function closeDialog() {
     let loc_input = document.getElementById('dialog-loc');
     if(loc_input.value !== ''){
         locationTest(loc_input.value);
+        dialog.close();
     }
-    //*/
+    /*/
     if (crime_url.value !== '' && url_input.checkValidity()) {
         dialog_err.value = false;
         dialog.close();
@@ -126,26 +174,77 @@ function locationTest(loc){
         console.log('Error:', error);
     });
 }
+
+function addTag(filter){
+    if(newTag.value == ''){
+        return;
+    }
+    if(filter != null){
+        filter.value = false;
+    }
+
+    tags.value.push({id: id++, text: newTag.value});
+}
+
+function removeTag(tag){
+    tags.value = tags.value.filter((t) => t !== tag)
+}
+
 </script>
 
 <template>
-    <dialog id="rest-dialog" open>
+    <!-- <dialog id="rest-dialog" open>
         <h1 class="dialog-header">St. Paul Crime REST API</h1>
         <label class="dialog-label">Location: </label>
-        <!-- <input id="dialog-url" class="dialog-input" type="url" v-model="crime_url" placeholder="http://localhost:8000" /> -->
         <input id="dialog-loc" class="dialog-input" v-model="location" placeholder="Enter a location" />
         <p class="dialog-error" v-if="dialog_err">Error: must enter valid URL</p>
         <br/>
         <button class="button" type="button" @click="closeDialog">GO</button>
-    </dialog>
-    <div class="grid-container ">
-        <div class="grid-x grid-padding-x">
-            <div id="leafletmap" class="cell auto"></div>
+    </dialog> -->
+    
+    <div class="grid-container" style="padding: 0; margin-left: 0%; background-color: red; max-width: 100%;">
+        <div class="grid-x" style="background-color: yellow; margin: 0; padding: 0;">
+            <!-- might not need hardcoded height when all filters are added-->
+            <div id="rest-dialog" class="cell small-4 grid-container" style="background-color: green; margin: 0; padding:0;height: 500px;">
+                <div class="grid-container">
+                    <h1 class="dialog-header">St. Paul Crime REST API</h1>
+                    <div class="grid-y grid-margin-y">
+                        <label class="dialog-label">Location: </label>
+                        <input id="dialog-loc" class="dialog-input" v-model="location" placeholder="Enter a location" />
+                        <div class="grid-x">
+                            <select id="filter1" class="cell small-4" style="height: 2.6rem;" v-model="newTag" >
+                                <option value="" selected disabled hidden>Filter</option> 
+                                <option value="a">a</option>
+                                <option value="b">b</option>
+                                <option value="c">c</option>
+                            </select>
+                            <button v-if="addFilter1" class="button cell small-2" type="button" @click="addTag(myRefs.addFilter1)" >+</button>
+                        </div>
+                        <button class="button cell" type="button" @click="closeDialog">GO</button>
+                    </div>
+                </div>
+                <div class="cell small-12" style="margin-top:1rem; padding: 1rem; background-color: aquamarine;">
+                    <div class="button tag-button"
+                        v-for="tag in tags" :key="tag.id" >
+                            {{ tag.text }}
+                            <button class="tag-close" @click="removeTag(tag)">X</button>
+                    </div>
+                </div>
+            </div>
+            <div class="cell small-8" style="background-color: blue;">
+                <div id="leafletmap"  style="margin:0; padding: 0; height: 100%;"></div>
+            </div>
         </div>
+    </div>
+    <div class="grid-container">
+        <div id="grid-x grid-padding-x">
+            <IncidentTable id="table" :crimes="crimes" :codes="codes" :neighborhoods="neighborhoods"></IncidentTable>
+        </div>   
     </div>
 </template>
 
 <style scoped>
+/**
 #rest-dialog {
     width: 20rem;
     margin-top: 1rem;
