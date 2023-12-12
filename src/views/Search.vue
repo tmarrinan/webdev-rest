@@ -11,27 +11,12 @@ let crimes = ref([]);
 let codes = ref([]);
 let neighborhoods = ref([]);
 
+// filter vars
 let addFilter1 = ref(true);
 let myRefs = {addFilter1: addFilter1};
-
 let id = 0;
 const tags = ref([]);
-
 let newTag = ref('');
-
-function addTag(filter){
-    if(newTag.value == ''){
-        return;
-    }
-    if(filter != null){
-        filter.value = false;
-    }
-
-    tags.value.push({id: id++, text: newTag.value});
-}
-function removeTag(tag){
-    tags.value = tags.value.filter((t) => t !== tag)
-}
 
 let map = reactive(
     {
@@ -131,6 +116,22 @@ async function fetchJson(url) {
     return fetch(url).then(response => response.json());
 }
 
+function getNeighborhoodNameById(id, neighborhoods) {
+    // finds json object for id passed
+    const neighborhood = neighborhoods.find(i => i.id === id);
+    return neighborhood ? neighborhood.name : null;
+}
+
+function calculateCrimes(name, crimes, neighborhoods) {
+    let crime_count = 0
+    crimes.forEach((crime) => {
+        if (getNeighborhoodNameById(crime.neighborhood_number, neighborhoods) === name) {
+            crime_count++;
+        }
+    })
+    return crime_count; 
+}
+
 // Function called when user presses 'OK' on dialog box
 function closeDialog() {
     let dialog = document.getElementById('rest-dialog');
@@ -174,21 +175,21 @@ function locationTest(loc){
     });
 }
 
-function getNeighborhoodNameById(id, neighborhoods) {
-    // finds json object for id passed
-    const neighborhood = neighborhoods.find(i => i.id === id);
-    return neighborhood ? neighborhood.name : null;
+function addTag(filter){
+    if(newTag.value == ''){
+        return;
+    }
+    if(filter != null){
+        filter.value = false;
+    }
+
+    tags.value.push({id: id++, text: newTag.value});
 }
 
-function calculateCrimes(name, crimes, neighborhoods) {
-    let crime_count = 0
-    crimes.forEach((crime) => {
-        if (getNeighborhoodNameById(crime.neighborhood_number, neighborhoods) === name) {
-            crime_count++;
-        }
-    })
-    return crime_count; 
+function removeTag(tag){
+    tags.value = tags.value.filter((t) => t !== tag)
 }
+
 </script>
 
 <template>
