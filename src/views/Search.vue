@@ -47,23 +47,23 @@ let map = reactive(
             se: {lat: 44.883658, lng: -92.993787}
         },
         neighborhood_markers: [
-            {location: [44.942068, -93.020521], marker: 1},
-            {location: [44.977413, -93.025156], marker: 2},
-            {location: [44.931244, -93.079578], marker: 3},
-            {location: [44.956192, -93.060189], marker: 4},
-            {location: [44.978883, -93.068163], marker: 5},
-            {location: [44.975766, -93.113887], marker: 6},
-            {location: [44.959639, -93.121271], marker: 7},
-            {location: [44.947700, -93.128505], marker: 8},
-            {location: [44.930276, -93.119911], marker: 9},
-            {location: [44.982752, -93.147910], marker: 10},
-            {location: [44.963631, -93.167548], marker: 11},
-            {location: [44.973971, -93.197965], marker: 12},
-            {location: [44.949043, -93.178261], marker: 13},
-            {location: [44.934848, -93.176736], marker: 14},
-            {location: [44.913106, -93.170779], marker: 15},
-            {location: [44.937705, -93.136997], marker: 16},
-            {location: [44.949203, -93.093739], marker: 17}
+            {location: [44.942068, -93.020521], number: 1},
+            {location: [44.977413, -93.025156], number: 2},
+            {location: [44.931244, -93.079578], number: 3},
+            {location: [44.956192, -93.060189], number: 4},
+            {location: [44.978883, -93.068163], number: 5},
+            {location: [44.975766, -93.113887], number: 6},
+            {location: [44.959639, -93.121271], number: 7},
+            {location: [44.947700, -93.128505], number: 8},
+            {location: [44.930276, -93.119911], number: 9},
+            {location: [44.982752, -93.147910], number: 10},
+            {location: [44.963631, -93.167548], number: 11},
+            {location: [44.973971, -93.197965], number: 12},
+            {location: [44.949043, -93.178261], number: 13},
+            {location: [44.934848, -93.176736], number: 14},
+            {location: [44.913106, -93.170779], number: 15},
+            {location: [44.937705, -93.136997], number: 16},
+            {location: [44.949203, -93.093739], number: 17}
         ]
     }
 );
@@ -94,42 +94,34 @@ onMounted(() => {
     .catch((error) => {
         console.log('Error:', error);
     });
-    initializeCrimes()
 
-    map.neighborhood_markers.forEach((marker) => {
+    initializeCrimes()
+    .then(() => {
+        map.neighborhood_markers.forEach((marker) => {
         L.marker(marker.location).addTo(map.leaflet).bindPopup(
-            marker.marker + " Crimes: "
+            `${getNeighborhoodNameById(marker.number, neighborhoods.value)}`
         );
     });
+    })
+    .catch(error => {
+            console.log('Error:', error);
+    });
+    
 });
 
+async function fetchJson(url) {
+    return fetch(url).then(response => response.json());
+}
 
-// Performs GET requests on /incident, /codes, /neightborhoods endpoints.
-// Sorts return data into their respective data models.
-function initializeCrimes() {
-    fetch(base_url.value + "/incidents")
-    .then((response) => {
-        return response.json();
-    })
-    .then((data) => {
-        crimes.value = data;
-        return fetch(base_url.value + "/codes");
-    })
-    .then((response) => {
-        return response.json();
-    })
-    .then((data) => {
-        codes.value = data;
-        return fetch(base_url.value + "/neighborhoods");
-    })
-    .then((response) => {
-        return response.json();
-    })
-    .then((data) => {
-        neighborhoods.value = data;
-    })
-    .catch((error) => {
-        console.log('Error:', error);
+async function initializeCrimes() {
+    return Promise.all([
+        fetchJson(base_url.value + "/incidents"),
+        fetchJson(base_url.value + "/codes"),
+        fetchJson(base_url.value + "/neighborhoods")
+    ]).then(data => {
+        crimes.value = data[0];
+        codes.value = data[1];
+        neighborhoods.value = data[2];
     });
 }
 
@@ -174,6 +166,12 @@ function locationTest(loc){
     .catch((error)=>{
         console.log('Error:', error);
     });
+}
+
+function getNeighborhoodNameById(id, neighborhoods) {
+    // finds json object for id passed
+    const neighborhood = neighborhoods.find(i => i.id === id);
+    return neighborhood ? neighborhood.name : null;
 }
 </script>
 
