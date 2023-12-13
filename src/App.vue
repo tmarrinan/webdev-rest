@@ -189,6 +189,29 @@ function closeDialog() {
         dialog_err.value = true;
     }
 }
+
+function deleteIncident(caseNumber) {
+    return fetch(`${crime_url.value}/remove-incident`, {
+        method: 'DELETE',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ case_number: caseNumber }),
+    })
+    .then((response) => {
+        if (response.ok) {
+            console.log(`Incident with case number ${caseNumber} deleted successfully.`);
+            return response.json(); // You might return something here if needed
+        } else {
+            console.error('Failed to delete incident.');
+            throw new Error('Failed to delete incident');
+        }
+    })
+    .catch((error) => {
+        console.error('Error:', error);
+        throw error;
+    });
+}
 </script>
 
 <template>
@@ -223,6 +246,7 @@ function closeDialog() {
                 <th>block</th>
                 <th>date</th>
                 <th>time</th>
+                <th>delete incident</th>
             </tr>
         </thead>
         <tbody>
@@ -236,6 +260,7 @@ function closeDialog() {
                 <td>{{ item.block }}</td>
                 <td>{{ item.date }}</td>
                 <td>{{ item.time }}</td>
+                <td><button class="button" type="button" @click="deleteIncident(item.case_number)">Delete</button></td>
             </tr>
         </tbody>
     </table>
