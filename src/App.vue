@@ -226,6 +226,29 @@ function closeDialog() {
     }
 }
 
+function deleteIncident(caseNumber) {
+    return fetch(`${crime_url.value}/remove-incident`, {
+        method: 'DELETE',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ case_number: caseNumber }),
+    })
+    .then((response) => {
+        if (response.ok) {
+            console.log(`Incident with case number ${caseNumber} deleted successfully.`);
+            return response.json();
+        } else {
+            console.error('Failed to delete incident.');
+            throw new Error('Failed to delete incident');
+        }
+    })
+    .catch((error) => {
+        console.error('Error:', error);
+        throw error;
+    });
+}
+
 // This function moves the map to the location specified 
 function pressGo() {
     // pull all inputs in from the boxes 
@@ -312,6 +335,7 @@ function pressGo() {
                 <th>block</th>
                 <th>date</th>
                 <th>time</th>
+                <th>delete incident</th>
             </tr>
         </thead>
         <tbody>
@@ -325,6 +349,7 @@ function pressGo() {
                 <td>{{ item.block }}</td>
                 <td>{{ item.date }}</td>
                 <td>{{ item.time }}</td>
+                <td><button class="button" type="button" @click="deleteIncident(item.case_number)">Delete</button></td>
             </tr>
         </tbody>
     </table>
