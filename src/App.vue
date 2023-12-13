@@ -80,24 +80,25 @@ onMounted(() => {
     });
 
     map.leaflet.on('moveend', function () {
-        var center = map.center;
+        var center = map.leaflet.getCenter();
         var latitude = document.getElementById("latitude")
         var longitude = document.getElementById("longitude")
-        // var address = document.getElementById("address");
+        var address = document.getElementById("address");
 
         latitude.value = center.lat; //update the boxes with the current center
         longitude.value = center.lng;
 
-        // var fetchUrl = "https://nominatim.openstreetmap.org/reverse?format=json&lat="+map.center.lat+"&lon="+map.center.lng;
-        // fetch(fetchUrl)
-        // .then((response) => {
-        //     return response.json();
-        // })
-        // .then((json) => {
-        //     var location = json.display_name;
-        //     address.value = location;
-        //     map.center.address = location;
-        // });
+        var fetchUrl = "https://nominatim.openstreetmap.org/reverse?format=json&lat="+map.center.lat+"&lon="+map.center.lng;
+        fetch(fetchUrl)
+        .then((response) => {
+           return response.json();
+        })
+        .then((json) => {
+            var location = json.display_name;
+            map.center = center;
+            address.value = location;
+            map.center.address = location;
+        });
 
     });
 });
@@ -243,7 +244,6 @@ function pressGo() {
             return response.json();
         })
         .then((json) => {
-
             var newCenter = L.latLng(json[0].lat, json[0].lon);
             map.leaflet.setView(newCenter, 14, { animate: true }); // move the map to the new center and zoom in
         });
