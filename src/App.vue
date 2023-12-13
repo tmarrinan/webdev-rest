@@ -50,6 +50,19 @@ onMounted(() => {
     }).addTo(map.leaflet);
     map.leaflet.setMaxBounds([[44.883658, -93.217977], [45.008206, -92.993787]]);
 
+    // write the address in that's on the center of the map when initially start the app
+    var address = document.getElementById("address");
+    var fetchUrl = "https://nominatim.openstreetmap.org/reverse?format=json&lat="+map.center.lat+"&lon="+map.center.lng;
+    fetch(fetchUrl)
+    .then((response) => {
+        return response.json();
+    })
+    .then((json) => {
+        var location = json.display_name;
+        address.value = location;
+        map.center.address = location;
+    });
+
     // Get boundaries for St. Paul neighborhoods
     let district_boundary = new L.geoJson();
     district_boundary.addTo(map.leaflet);
@@ -64,6 +77,28 @@ onMounted(() => {
     })
     .catch((error) => {
         console.log('Error:', error);
+    });
+
+    map.leaflet.on('moveend', function () {
+        var center = map.center;
+        var latitude = document.getElementById("latitude")
+        var longitude = document.getElementById("longitude")
+        // var address = document.getElementById("address");
+
+        latitude.value = center.lat; //update the boxes with the current center
+        longitude.value = center.lng;
+
+        // var fetchUrl = "https://nominatim.openstreetmap.org/reverse?format=json&lat="+map.center.lat+"&lon="+map.center.lng;
+        // fetch(fetchUrl)
+        // .then((response) => {
+        //     return response.json();
+        // })
+        // .then((json) => {
+        //     var location = json.display_name;
+        //     address.value = location;
+        //     map.center.address = location;
+        // });
+
     });
 });
 
@@ -263,7 +298,6 @@ function pressGo() {
     <div class="ui-row">
         <button class="button" type="button" @click="pressGo">Go</button>
     </div>
-
 
 
 
