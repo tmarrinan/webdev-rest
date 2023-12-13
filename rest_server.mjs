@@ -138,10 +138,8 @@ app.get('/neighborhoods', (req, res) => {
 
 
 
-// GET request handler for crime incidents (COMPLETED?)
+// GET request handler for crime incidents (COMPLETED)
 //EX: http://localhost:8000/incidents?start_date=2014-08-14&end_date=2014-08-20&code=600,641&limit=50
-//Note: Result should include the N most recent incidents (within specified date range).
-// Please fix case where (It suppose to show all case where it is in the date specifically): http://localhost:8000/incidents?start_date=2014-08-14&end_date=2014-08-14
 app.get('/incidents', (req, res) => {
     //console.log(req.query); // query object (key-value pairs after the ? in the url)
     let sql = 'SELECT case_number, date(date_time) AS date, time(date_time) AS time, code, incident, police_grid, neighborhood_number, block FROM Incidents';
@@ -149,13 +147,13 @@ app.get('/incidents', (req, res) => {
     let limit = 1000;
     let count = 0;
     if(req.query.hasOwnProperty('start_date')){
-        sql += count == 0 ? ' WHERE date_time >= ?': ' AND date_time >= ?'
+        sql += count == 0 ? ' WHERE date(date_time) >= ?': ' AND date(date_time) >= ?';
         params.push(req.query.start_date);
         count++;
     }
 
     if(req.query.hasOwnProperty('end_date')){
-        sql += count == 0 ? ' WHERE date_time <= ?': ' AND date_time <= ?'
+        sql += count == 0 ? ' WHERE date(date_time) <= ?': ' AND date(date_time) <= ?';
         params.push(req.query.end_date);
         count++;
     }
@@ -200,7 +198,7 @@ app.get('/incidents', (req, res) => {
         limit = parseInt(req.query.limit);
     }
     params.push(limit);
-    sql += ' ORDER BY date_time ASC LIMIT ?';
+    sql += ' ORDER BY date_time DESC LIMIT ?';
 
     //console.log(sql);
     //console.log('PARAM: ', params);
