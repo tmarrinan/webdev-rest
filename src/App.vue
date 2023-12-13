@@ -201,7 +201,7 @@ function deleteIncident(caseNumber) {
     .then((response) => {
         if (response.ok) {
             console.log(`Incident with case number ${caseNumber} deleted successfully.`);
-            return response.json(); // You might return something here if needed
+            return response.json();
         } else {
             console.error('Failed to delete incident.');
             throw new Error('Failed to delete incident');
