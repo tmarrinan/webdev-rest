@@ -16,26 +16,53 @@ let dialog_success = ref(false);
 let crime_url = ref('');
 let dialog_err = ref(false);
 let location = ref('');
-let addFilter1 = ref(true);
-let myRefs = {addFilter1: addFilter1};
 
 let id = 0;
 const tags = ref([]);
 
 let newTag = ref('');
+let startDate = ref();
+let endDate = ref();
+let limit = ref();
 
-function addTag(filter){
-    if(newTag.value == ''){
+let addStartDate = ref(true);
+let addEndDate = ref(true);
+let addLimit = ref(true);
+
+let refs = {
+    startDate: startDate,   addStartDate: addStartDate,
+    endDate: endDate,       addEndDate: addEndDate,
+    limit: limit,           addLimit: addLimit
+};
+let addFilter1 = ref(true); //testing purposes can delete later
+let myRefs = {newTag: newTag, addFilter1: addFilter1}; //testing purposes can delete later
+
+function validateAndAdd(id, tag, addButton, title='', revert=true){
+    let input = document.getElementById("end-date");
+    console.log(input);
+    if(input.checkValidity()){
+        addTag(tag, addButton, title, revert);
+    }
+}
+
+function addTag(tag, addButton, title='', revert=true){
+    if(tag.value == '' || tag.value == null){
         return;
     }
-    if(filter != null){
-        filter.value = false;
+    if(tag.revert){
+        addButton.value = false;
     }
-
-    tags.value.push({id: id++, text: newTag.value});
+    tags.value.push({
+        id: id++, text: title + tag.value,
+        button: addButton, revert: revert
+    });
 }
+
 function removeTag(tag){
-    tags.value = tags.value.filter((t) => t !== tag)
+    tags.value = tags.value.filter((t) => t !== tag);
+    if(tag.revert){
+        tag.button = true;
+    }
 }
 
 let map = reactive(
@@ -95,6 +122,17 @@ onMounted(() => {
         result.features.forEach((value) => {
             district_boundary.addData(value);
         });
+    })
+    .catch((error) => {
+        console.log('Error:', error);
+    });
+    
+    fetch('http://localhost:8001/neighborhoods?&limit=1')
+    .then((response) => {
+        return response.json();
+    })
+    .then((data) => {
+        console.log(data);
     })
     .catch((error) => {
         console.log('Error:', error);
@@ -209,7 +247,7 @@ function uploadIncidents(){
     <div class="grid-container" style="padding: 0; margin-left: 0%; background-color: red; max-width: 100%;">
         <div class="grid-x" style="background-color: yellow; margin: 0; padding: 0;">
             <!-- might not need hardcoded height when all filters are added-->
-            <div id="rest-dialog" class="cell small-4 grid-container" style="background-color: green; margin: 0; padding:0;height: 500px;">
+            <div id="rest-dialog" class="cell small-4 grid-container" style="background-color: green; margin: 0; padding:0;">
                 <div class="grid-container">
                     <h1 class="dialog-header">St. Paul Crime REST API</h1>
                     <div class="grid-y grid-margin-y">
@@ -222,7 +260,23 @@ function uploadIncidents(){
                                 <option value="b">b</option>
                                 <option value="c">c</option>
                             </select>
-                            <button v-if="addFilter1" class="button cell small-2" type="button" @click="addTag(myRefs.addFilter1)" >+</button>
+                            <button v-if="addFilter1" class="button cell small-2" type="button" @click="addTag(myRefs.newTag, myRefs.addFilter1, '', false)" >+</button>
+                        </div>
+                        <div class="grid-x">
+                            <label for="start-date" class="cell small-12">Start Date</label>
+                            <input v-model="startDate" class="cell small-4 grid-container" type="date" id="start-date" pattern="\d{4}-\d{2}-\d{2}">
+                            <button v-if="addStartDate" class="button cell small-2" type="button" @click="validateAndAdd('start-date', refs.startDate, refs.addStartDate, 'Start Date: ')" >+</button>
+                        </div>
+                        <div class="grid-x">
+                            <label for="end-date" class="cell small-12">End Date</label>
+                            <input v-model="endDate" class="cell small-4 grid-container" type="date" id="end-date" pattern="\d{4}-\d{2}-\d{2}">
+                            <!-- <button v-if="addEndDate" class="button cell small-2" type="button" @click="addTag(refs.endDate, refs.addEndDate, 'End Date: ')" >+</button> -->
+                            <button v-if="addEndDate" class="button cell small-2" type="button" @click="validateAndAdd('end-date', refs.endDate, refs.addEndDate, 'End Date: ')" >+</button>
+                        </div>
+                        <div class="grid-x">
+                            <label for="limit" class="cell small-12">Limit</label>
+                            <input v-model="limit" class="cell small-4 grid-container" type="number" id="limit" placeholder="1000">
+                            <button v-if="addLimit" class="button cell small-2" type="button" @click="addTag(refs.limit, refs.addLimit, 'Limit: ', true)" >+</button>
                         </div>
                         <button class="button cell" type="button" @click="closeDialog">GO</button>
                     </div>
