@@ -237,9 +237,7 @@ function removeTag(tag){
         </div>
     </div>
     <div class="grid-container">
-        <div id="grid-x grid-padding-x">
-            <IncidentTable id="table" :crimes="crimes" :codes="codes" :neighborhoods="neighborhoods"></IncidentTable>
-        </div>   
+        <IncidentTable id="table" :crimes="crimes" :codes="codes" :neighborhoods="neighborhoods"></IncidentTable>
     </div>
 </template>
 

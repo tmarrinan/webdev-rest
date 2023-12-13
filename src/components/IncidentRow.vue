@@ -1,5 +1,8 @@
 <script setup>
+import { ref } from 'vue';
+import Popup from './IncidentPopUp.vue';
 defineProps(['incident', 'codes', 'neighborhoods']);
+const isOpen = ref(false);
 
 function getIncidentTypeByCode(code, codes) {
     // finds json object for code passed
@@ -12,23 +15,63 @@ function getNeighborhoodNameById(id, neighborhoods) {
     const neighborhood = neighborhoods.find(i => i.id === id);
     return neighborhood ? neighborhood.name : null;
 }
+
 </script>
 
 <template>
-    <tr>
-        <td>{{ incident.case_number }}</td>
-        <td>{{ incident.date }}</td>
-        <td>{{ incident.time }} mph</td>
-        <td>{{ getIncidentTypeByCode(incident.code, codes)}}</td>
-        <td>{{ incident.incident }}</td>
-        <td>{{ incident.police_grid }}</td>
-        <td>{{ getNeighborhoodNameById(incident.neighborhood_number, neighborhoods) }}</td>
-        <td>{{ incident.block }}</td>
-    </tr>
+    <div class="cell box">
+        <div class="caseNum">
+            <h1>Case</h1>
+            <h4>{{ incident.case_number }}</h4>
+        </div>
+        <div class="infopreview">
+            <h1>Date:</h1>
+            <h4>{{ incident.date }}</h4>
+        </div>
+        <div class="learnButton">
+            <button @click="isOpen = true">Learn More</button>
+        </div>
+        <teleport to="body">
+            <div class="moreInfo" v-if="isOpen">
+                <Popup :incident="incident" :codes="codes" :neighborhoods="neighborhoods" @close="isOpen = false"></Popup>
+            </div>
+        </teleport>
+    </div>
 </template>
 
 <style scoped>
-td {
-    border: solid 1px #000000
+.box {
+    padding: .5em;
+    margin: .5em;
+    height: 18em;
+    border: 4px solid rgb(30, 97, 130);
 }
+h1{
+    text-align: center;
+    font-size: 2em;
+    font-weight: bold;
+}
+h4{
+    text-align: center;
+    font-size: 1.5em;
+}
+
+.learnButton{
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: .5em;
+}
+.learnButton button{
+    border: 3px solid rgb(0, 0, 0);
+    border-radius: 1em;
+    padding: 1em;
+    font-weight: bold;
+    cursor: pointer;
+}
+.learnButton button:hover{
+    background-color: black;
+    color: white;
+}
+
 </style>

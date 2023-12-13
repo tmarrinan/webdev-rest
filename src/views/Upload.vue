@@ -16,7 +16,6 @@ let dialog_caseNumCheck = ref(false);
 
 
 //Upload incidents to database
-//TODO: check to see if the data already exist when submit a new one
 async function uploadIncidents(){
     let formValues = {"case_number": caseNum.value, "date": dateI.value, "time": timeI.value, "code": code.value, "incident": IncidentName.value, "police_grid": Police_grid.value, "neighborhood_number": NeighNum.value, "block": AddressI.value};
     console.log("stuff: "+ caseNum.value, dateI.value, timeI.value, code.value, IncidentName.value, Police_grid.value, NeighNum.value, AddressI.value);
