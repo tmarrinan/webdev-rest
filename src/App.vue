@@ -1,5 +1,8 @@
 <script setup>
 import { reactive, ref, onMounted } from 'vue'
+import pageSidebar from "./components/sidebar.vue"
+import pageLegend from "./components/legend.vue"
+
 
 let crime_url = ref('');
 let dialog_err = ref(false);
@@ -89,21 +92,31 @@ function closeDialog() {
 }
 </script>
 
+
 <template>
-    <dialog id="rest-dialog" open>
-        <h1 class="dialog-header">St. Paul Crime REST API</h1>
-        <label class="dialog-label">URL: </label>
-        <input id="dialog-url" class="dialog-input" type="url" v-model="crime_url" placeholder="http://localhost:8000" />
-        <p class="dialog-error" v-if="dialog_err">Error: must enter valid URL</p>
-        <br/>
-        <button class="button" type="button" @click="closeDialog">OK</button>
-    </dialog>
-    <div class="grid-container ">
-        <div class="grid-x grid-padding-x">
-            <div id="leafletmap" class="cell auto"></div>
+    <div class="grid-x">
+        <div class="cell large-10 columns main">
+            <dialog id="rest-dialog" open style="border-radius: 20px;">
+                <h1 class="dialog-header">St. Paul Crime REST API</h1>
+                <label class="dialog-label">URL: </label>
+                <input id="dialog-url" class="dialog-input" type="url" v-model="crime_url" placeholder="http://localhost:8000" />
+                <p class="dialog-error" v-if="dialog_err">Error: must enter valid URL</p>
+                <br/>
+            <button class="button" type="button" @click="closeDialog">OK</button>
+            </dialog>
+            <div class="grid-container">
+                <div class="grid-x grid-padding-x" style="border-radius: 20px;">
+                    <div id="leafletmap" class="cell auto"></div>
+                </div>
+            </div>
+            <pageLegend></pageLegend>
+        </div>
+        <div class="cell large-2 columns">
+            <pageSidebar></pageSidebar>
         </div>
     </div>
 </template>
+
 
 <style>
 #rest-dialog {
@@ -133,5 +146,11 @@ function closeDialog() {
 .dialog-error {
     font-size: 1rem;
     color: #D32323;
+}
+
+.main{
+    background-color: white;
+    border-radius: 30px;
+    padding: 20px;
 }
 </style>
