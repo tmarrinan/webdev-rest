@@ -98,10 +98,14 @@ onMounted(() => {
             map.center = center;
             address.value = location;
             map.center.address = location;
+            var bounds = map.leaflet.getBounds();
+            // console.log(bounds);
+            // initializeCrimes(bounds);
         });
 
     });
 });
+
 
 function replaceIncompleteAddress(address) {
   const addressParts = address.split(' ');
@@ -127,13 +131,15 @@ function replaceIncompleteAddress(address) {
 
 // FUNCTIONS
 // Function called once user has entered REST API URL
-function initializeCrimes() {
+function initializeCrimes(bounds) {
+    console.log(bounds);
+    
     // TODO: get code and neighborhood data
-    //       get initial 1000 crimes
     console.log(crime_url.value);
     let code_map = {}
     let neighborhood_map = {}
     let crimes_num_table = {}
+    
     fetch(crime_url.value+"/codes")
     .then((response) => {
         return response.json();
@@ -145,7 +151,7 @@ function initializeCrimes() {
         })
     })
     .catch((error) => {
-        console.log("error")
+        console.log("error in chagning the codes")
         console.log(error)
     });
 
@@ -163,7 +169,7 @@ function initializeCrimes() {
         console.log(crimes_num_table)
     })
     .catch((error) => {
-        console.log("error")
+        console.log("error in chagning neighborhoods")
         console.log(error)
     });
 
@@ -173,8 +179,8 @@ function initializeCrimes() {
         return response.json(); //we need to tell it how we want the result, which is in json
     })
     .then((json) => {
-
         json.forEach((crime) => {
+        //if the crime is within the boundaries?
             table.push({
                 case_number: crime.case_number,
                 incident_type: code_map[crime.code],
@@ -204,12 +210,13 @@ function initializeCrimes() {
         }) 
     })
     .catch((error) => {
-        console.log("error")
+        console.log("error in creating the table")
         console.log(error)
     });
 
     console.log(table)
 }
+
 
 // Function called when user presses 'OK' on dialog box
 function closeDialog() {
@@ -218,8 +225,14 @@ function closeDialog() {
     if (crime_url.value !== '' && url_input.checkValidity()) {
         dialog_err.value = false;
         dialog.close();
-        initializeCrimes();
+        var bounds = map.leaflet.getBounds();
+        // initializeCrimes(bounds);
         console.log('valid');
+        map.leaflet.on('moveend', function () {
+            var bounds = map.leaflet.getBounds();
+            initializeCrimes(bounds);
+        });
+
     }
     else {
         dialog_err.value = true;
@@ -234,10 +247,8 @@ function pressGo() {
     var longitude = document.getElementById("longitude").value;
     if (address.trim() !== "") { // see if an address was entered
         address = address.replaceAll(" ", '+'); // change spaces to pluses
-        // console.log(address)
         var baseUrl = "https://nominatim.openstreetmap.org/search?q="
         var fetchUrl = baseUrl+address+"&format=json&polygon=1&addressdetails=1";
-        // console.log(fetchUrl);
 
         fetch(fetchUrl)
         .then((response) => {
