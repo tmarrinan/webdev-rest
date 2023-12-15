@@ -441,6 +441,21 @@ const unselectCrime = (address, case_number) => {
     <span class="legend-item other-crime">Other Crime</span>
   </div>
 
+  <div id="checkboxList">
+    <label><input type="checkbox"> Narcotics</label>
+    <label><input type="checkbox"> Proactive Polic Visit</label>
+    <label><input type="checkbox"> Discharge </label>
+    <label><input type="checkbox"> Theft</label>
+    <label><input type="checkbox"> Robbery </label>
+    <label><input type="checkbox"> Community Event</label>
+    <label><input type="checkbox"> Auto Theft</label>
+    <label><input type="checkbox"> Criminal Damage</label>
+    <label><input type="checkbox"> Burglary</label>
+    <label><input type="checkbox"> Simple Assault Dom</label>
+    <label><input type="checkbox"> Agg. Assault Dom</label>  
+    <label><input type="checkbox"> Agg. Assault</label>
+  </div>
+
 
   <table class = "unstriped" v-if="table.length > 0">
     <thead>
@@ -558,6 +573,10 @@ const unselectCrime = (address, case_number) => {
 .ui-row {
   display: inline-block;
   margin-right: 15px;
-  /* Adjust spacing between input boxes */
 }
+
+#checkboxList label {
+      display: inline-block;
+      margin-right: 10px; 
+    }
 </style>
