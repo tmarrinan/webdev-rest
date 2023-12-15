@@ -39,6 +39,28 @@ let map = reactive({
   crime_markers: [],
 });
 
+const getClassForTableRow = (incident) => {
+  if (
+      incident.toLowerCase().includes("homicide") ||
+      incident.toLowerCase().includes("murder") ||
+      incident.toLowerCase().includes("rape") ||
+      incident.toLowerCase().includes("robbery") ||
+      incident.toLowerCase().includes("assault") ||
+      incident.toLowerCase().includes("arson")
+    ) {
+      return "highlight-red";
+    } else if (
+      incident.toLowerCase().includes("burglary") ||
+      incident.toLowerCase().includes("theft") ||
+      incident.toLowerCase().includes("property") ||
+      incident.toLowerCase().includes("graffiti")
+    ) {
+      return "highlight-orange";
+    } else {
+      return "highlight-yellow";
+    }
+  }
+
 // Vue callback for once <template> HTML has been added to web page
 onMounted(() => {
   // Create Leaflet map (set bounds and valied zoom levels)
@@ -330,7 +352,7 @@ const selectCrime = (address, date, time, incident, case_number) => {
 
     .then((json) => {
       let markerLocation = [json[0].lat, json[0].lon];
-      const marker = L.marker(markerLocation, {icon: redIcon})
+      const marker = L.marker(markerLocation, { icon: redIcon })
         .addTo(map.leaflet)
         .bindPopup(
           `<b>Date:</b> ${date} </br>
@@ -352,27 +374,28 @@ const selectCrime = (address, date, time, incident, case_number) => {
 const unselectCrime = (address, case_number) => {
   let indexToRemove = -1;
 
-  console.log(case_number)
+  console.log(case_number);
 
   map.crime_markers.forEach((item, index) => {
     if (item.case_number === case_number) {
-      console.log(item.case_number)
+      console.log(item.case_number);
       indexToRemove = index;
     }
   });
 
   if (indexToRemove !== -1) {
     let markerToRemove = map.crime_markers[indexToRemove].marker;
-    console.log(markerToRemove)
+    console.log(markerToRemove);
 
     // Assuming markerToRemove is a Leaflet marker
     if (map.leaflet && markerToRemove) {
-      console.log(markerToRemove)
-      markerToRemove.remove()
+      console.log(markerToRemove);
+      markerToRemove.remove();
       map.leaflet.removeLayer(markerToRemove);
       map.crime_markers.splice(indexToRemove, 1); // Remove the marker from the array
     }
   }
+
 };
 </script>
 <template>
@@ -412,7 +435,14 @@ const unselectCrime = (address, case_number) => {
     <button class="button" type="button" @click="pressGo">Go</button>
   </div>
 
-  <table v-if="table.length > 0">
+  <div class="legend">
+    <span class="legend-item violent-crime">Violent Crime</span>
+    <span class="legend-item property-crime">Property Crime</span>
+    <span class="legend-item other-crime">Other Crime</span>
+  </div>
+
+
+  <table class = "unstriped" v-if="table.length > 0">
     <thead>
       <tr>
         <th>case_number</th>
@@ -428,7 +458,10 @@ const unselectCrime = (address, case_number) => {
       </tr>
     </thead>
     <tbody>
-      <tr v-for="item in table">
+      <tr
+        v-for="item in table"
+        :id="getClassForTableRow(item.incident_type.trim())"
+      >
         <td>{{ item.case_number }}</td>
         <td>{{ item.incident_type }}</td>
         <td>{{ item.incident }}</td>
@@ -495,6 +528,32 @@ const unselectCrime = (address, case_number) => {
 .red-icon {
   background-color: red;
 }
+
+#highlight-red {
+  background-color: #FF4D4D;
+}
+
+#highlight-orange {
+  background-color: #FFA500;
+}
+
+#highlight-yellow {
+  background-color: lightgray
+}
+
+.legend {
+  margin-bottom: 1%;
+}
+
+.legend-item {
+  margin-right: 1% ;
+  padding: 0.5%;
+  border: 1px black;
+}
+
+.violent-crime { background-color: #FF4D4D; }
+.property-crime { background-color: #FFA500; }
+.other-crime { background-color: lightgray;}
 
 .ui-row {
   display: inline-block;
