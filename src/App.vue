@@ -2,6 +2,8 @@
 import { reactive, ref, onMounted } from 'vue'
 import pageSidebar from "./components/sidebar.vue"
 import pageLegend from "./components/legend.vue"
+import pageheader from "./components/header.vue"
+import pageFooter from "./components/footer.vue"
 
 
 let crime_url = ref('');
@@ -94,34 +96,37 @@ function closeDialog() {
 
 
 <template>
+    <pageheader></pageheader>
     <div class="grid-x">
-        <div class="cell large-10 columns main">
+        <div class="cell medium-12 large-8 columns chunk">
             <dialog id="rest-dialog" open style="border-radius: 20px;">
                 <h1 class="dialog-header">St. Paul Crime REST API</h1>
                 <label class="dialog-label">URL: </label>
                 <input id="dialog-url" class="dialog-input" type="url" v-model="crime_url" placeholder="http://localhost:8000" />
                 <p class="dialog-error" v-if="dialog_err">Error: must enter valid URL</p>
                 <br/>
-            <button class="button" type="button" @click="closeDialog">OK</button>
+                <button class="button" type="button" @click="closeDialog">OK</button>
             </dialog>
             <div class="grid-container">
-                <div class="grid-x grid-padding-x" style="border-radius: 20px;">
-                    <div id="leafletmap" class="cell auto"></div>
+                <div class="grid-x">
+                    <div id="leafletmap" class="cell auto" style="border-radius: 20px;"></div>
                 </div>
             </div>
-            <pageLegend></pageLegend>
         </div>
-        <div class="cell large-2 columns">
+        <div class="cell large-2 columns bar">
             <pageSidebar></pageSidebar>
         </div>
     </div>
+    <pageFooter></pageFooter>
+    
+ 
 </template>
 
 
 <style>
 #rest-dialog {
     width: 20rem;
-    margin-top: 1rem;
+    margin-top: 100rem;
     z-index: 1000;
 }
 
@@ -151,6 +156,22 @@ function closeDialog() {
 .main{
     background-color: white;
     border-radius: 30px;
-    padding: 20px;
+    padding: 10px;
+    padding-top: 25px;
+    width: 90%;
 }
+
+
+.chunk{
+    padding: 20px;
+    background-color: white;
+    margin: 100px;
+    border-radius: 30px;
+}
+
+.bar{
+    margin: 30px;
+}
+
+
 </style>
