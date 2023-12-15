@@ -113,7 +113,9 @@ onMounted(() => {
         map.center = center;
         address.value = location;
         map.center.address = location;
+        //shouldn't we be able to initailize the crimes here....?
       });
+      //or even out here to initailizeCrimes?
   });
 });
 
