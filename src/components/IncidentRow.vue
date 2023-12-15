@@ -2,6 +2,7 @@
 import { ref } from 'vue';
 import Popup from './IncidentPopUp.vue';
 defineProps(['incident', 'codes', 'neighborhoods']);
+
 const isOpen = ref(false);
 
 function getIncidentTypeByCode(code, codes) {
@@ -16,10 +17,32 @@ function getNeighborhoodNameById(id, neighborhoods) {
     return neighborhood ? neighborhood.name : null;
 }
 
+function getColorCode(code){
+    //Murder
+    if (code >= 100 && code < 200){
+        return "rgb(230, 0, 0)";
+    //Rape
+    }else if (code >= 200 && code < 300){
+        return "rgb(249, 0, 158)";
+    //Robbery
+    }else if ((code >= 300 && code < 400) || (code >= 500 && code < 800)){
+        return "rgb(6, 188, 0)";
+    //Assault
+    }else if ((code >= 400 && code < 500) || (code >= 800 && code < 900)){
+        return "rgb(0, 116, 217)";
+    //Arson
+    }else if (code >= 900 && code < 1000){
+        return "rgb(129, 0, 203)";
+    }else{
+        return "rgb(134, 134, 134)";
+    }
+}
+
 </script>
 
 <template>
     <div class="cell box">
+        <span id="clipIcon" v-bind:style="{color: getColorCode(incident.code)}"><ion-icon name="clipboard"></ion-icon></span>
         <div class="caseNum">
             <h1>Case</h1>
             <h4>{{ incident.case_number }}</h4>
@@ -43,8 +66,12 @@ function getNeighborhoodNameById(id, neighborhoods) {
 .box {
     padding: .5em;
     margin: .5em;
-    height: 18em;
-    border: 4px solid rgb(30, 97, 130);
+    height: 20em;
+    border: 4px solid black;
+    background-color: tan;
+}
+.box span{
+    font-size: 1.8em;
 }
 h1{
     text-align: center;
@@ -65,7 +92,7 @@ h4{
 .learnButton button{
     border: 3px solid rgb(0, 0, 0);
     border-radius: 1em;
-    padding: 1em;
+    padding: .6em;
     font-weight: bold;
     cursor: pointer;
 }

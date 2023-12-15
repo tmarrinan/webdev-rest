@@ -1,6 +1,139 @@
 <script setup>
+import { reactive, onMounted } from 'vue';
 defineProps(['incident', 'codes', 'neighborhoods']);
 defineEmits('close');
+
+let map = reactive(
+        {
+            leaflet: null,
+            center: {
+                lat: 44.955139,
+                lng: -93.102222,
+                address: ''
+            },
+            zoom: 12,
+            bounds: {
+                nw: {lat: 45.008206, lng: -93.217977},
+                se: {lat: 44.883658, lng: -92.993787}
+            },
+            neighborhood_markers: [
+                {location: [44.942068, -93.020521], marker: null},
+                {location: [44.977413, -93.025156], marker: null},
+                {location: [44.931244, -93.079578], marker: null},
+                {location: [44.956192, -93.060189], marker: null},
+                {location: [44.978883, -93.068163], marker: null},
+                {location: [44.975766, -93.113887], marker: null},
+                {location: [44.959639, -93.121271], marker: null},
+                {location: [44.947700, -93.128505], marker: null},
+                {location: [44.930276, -93.119911], marker: null},
+                {location: [44.982752, -93.147910], marker: null},
+                {location: [44.963631, -93.167548], marker: null},
+                {location: [44.973971, -93.197965], marker: null},
+                {location: [44.949043, -93.178261], marker: null},
+                {location: [44.934848, -93.176736], marker: null},
+                {location: [44.913106, -93.170779], marker: null},
+                {location: [44.937705, -93.136997], marker: null},
+                {location: [44.949203, -93.093739], marker: null}
+            ]
+        }
+    );
+// Vue callback for once <template> HTML has been added to web page
+onMounted(() => {
+        // Create Leaflet map (set bounds and valied zoom levels)
+        map.leaflet = L.map('leafletmap2').setView([map.center.lat, map.center.lng], map.zoom);
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+            minZoom: 11,
+            maxZoom: 18
+        }).addTo(map.leaflet);
+        map.leaflet.setMaxBounds([[44.883658, -93.217977], [45.008206, -92.993787]]);
+        // Get boundaries for St. Paul neighborhoods
+        let district_boundary = new L.geoJson();
+        district_boundary.addTo(map.leaflet);
+        fetch('data/StPaulDistrictCouncil.geojson')
+        .then((response) => {
+            return response.json();
+        })
+        .then((result) => {
+            result.features.forEach((value) => {
+                district_boundary.addData(value);
+            });
+        })
+        .catch((error) => {
+            console.log('Error:', error);
+        });
+});
+
+
+
+//--TESTING------------------------------------------
+async function markerMap(address, code, neighborhood_number, neighborhoods){
+    let url = 'https://nominatim.openstreetmap.org/search?q='+address+'&format=json&&limit=1';
+    let colorCode = getColorCode(code);
+    fetch(url)
+    .then((response)=>{
+        return response.json();
+    })
+    .then((data)=>{
+        if(data.length > 0){
+            let lat = data[0].lat;
+            let lon = data[0].lon;
+            map.leaflet.setView([lat, lon], 14);
+            L.circleMarker([lat, lon], {
+                radius: 15,
+                fillOpacity: 1,
+                color: 'black',
+                fillColor: colorCode
+            }).addTo(map.leaflet).bindPopup(
+                `${address}`
+            );
+        }else{
+            console.log("Not found");
+            //set the general area (WIP)
+        }
+        console.log(data);
+    })
+    .catch((error)=>{
+        console.log('Error:', error);
+    });
+}
+
+
+//--TESTING------------------------------------------
+//Replace X with 0 (Testing)
+function completeAddress(block, code, neighborhood_number, neighborhoods){
+    console.log(block);
+    let blockArr = block.split(" ");
+
+    blockArr[0] = blockArr[0].replaceAll("X", "0");
+    markerMap(blockArr.join(' '), code, neighborhood_number, neighborhoods);
+    return blockArr.join(' ');
+}
+//--TESTING------------------------------------------
+
+function getColorCode(code){
+    //Murder
+    if (code >= 100 && code < 200){
+        return "rgb(230, 0, 0)";
+    //Rape
+    }else if (code >= 200 && code < 300){
+        return "rgb(249, 0, 158)";
+    //Robbery
+    }else if ((code >= 300 && code < 400) || (code >= 500 && code < 800)){
+        return "rgb(6, 188, 0)";
+    //Assault
+    }else if ((code >= 400 && code < 500) || (code >= 800 && code < 900)){
+        return "rgb(0, 116, 217)";
+    //Arson
+    }else if (code >= 900 && code < 1000){
+        return "rgb(129, 0, 203)";
+    }else{
+        return "rgb(134, 134, 134)";
+    }
+}
+
+
+
 
 async function deleteData(caseNum){
     console.log('Deleted: '+caseNum);
@@ -46,16 +179,21 @@ function getNeighborhoodNameById(id, neighborhoods) {
         <td>{{ incident.block }}</td>
     </tr> -->
 	<div class="popup">
-		<div class="popup-inner grid-container">
-            <div class="grid-x grid-padding-x">
-                <h1 class="cell">Case Number: {{ incident.case_number }}</h1>
-                <h2 class="cell">Dated/Time: {{ incident.date }} {{ incident.time }}</h2>
-                <h3 class="cell">Incident: {{ incident.incident }} / {{ getIncidentTypeByCode(incident.code, codes)}}</h3>
-                <h4 class="cell">Police Grid: {{ incident.police_grid }}</h4>
-                <h5 class="cell">Address: {{ incident.block }} / {{ getNeighborhoodNameById(incident.neighborhood_number, neighborhoods) }}</h5>
+		<div class="popup-inner grid-x grid-padding-x">
+            <div class="moreInfo cell grid-x grid-padding-x">
+                <h1 class="cell">Case: {{ incident.case_number }}</h1>
+                <div class="cell medium-4">
+                    <h2 class="cell">{{ incident.date }} / {{ incident.time }}</h2>
+                    <h3 class="cell">{{ getIncidentTypeByCode(incident.code, codes)}}</h3>
+                </div>
+
+                <div class="cell medium-8">
+                    <div class="mapPopup" id="leafletmap2"></div>
+                </div>
+                <h4 class="cell">Address: {{ completeAddress(incident.block, incident.code, incident.neighborhood_number, neighborhoods)}} / {{ getNeighborhoodNameById(incident.neighborhood_number, neighborhoods) }}</h4>
 
 
-                <div class="cell options grid-x grid-padding-x">
+                <div class="cell options">
                     <button class="cell medium-6 popup-close" @click="$emit('close')">
                         Close
                     </button>
@@ -77,21 +215,21 @@ function getNeighborhoodNameById(id, neighborhoods) {
 	right: 0;
 	bottom: 0;
 	z-index: 9999;
-	background-color: rgba(0, 0, 0, 0.2);
+	background-color: rgba(0, 0, 0, 0.7);
 	
 	display: flex;
 	align-items: center;
 	justify-content: center;
 }
 .popup-inner{
-	background: #FFF;
-	padding: 32px;
+	background: tan;
+    border: 4px solid rgb(0, 0, 0);
     z-index: 99999;
 }
 
 .popup-close,
 .popup-closeDel{
-    border: 3px solid rgb(0, 0, 0);
+    border: 4px solid rgb(0, 0, 0);
     border-radius: 1em;
     padding: 1em;
     font-weight: bold;
@@ -104,5 +242,38 @@ function getNeighborhoodNameById(id, neighborhoods) {
 .popup-closeDel:hover{
     background-color: red;
     color: white;
+}
+
+.moreInfo h1{
+    font-weight: bold;
+}
+.moreInfo h2{
+    font-size: 1.2em;
+    font-weight: bold;
+}
+.moreInfo h3{
+    font-size: 1.2em;
+    font-weight: bold;
+}
+.moreInfo h4{
+    font-size: 1.3em;
+    font-weight: bold;
+}
+
+.options{
+    display: block;
+    text-align: center;
+}
+.options button{
+    margin-bottom: .5em;
+    width: 70%;
+}
+
+.mapPopup{
+    margin-bottom: 2em;
+    height: 250px;
+    width: 100%;
+    display: block;
+    border: 4px solid rgb(0, 0, 0);
 }
 </style>

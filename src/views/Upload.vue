@@ -66,41 +66,41 @@ async function uploadIncidents(){
                     <p class="dialog-success" v-if="dialog_success" style="color: green">Success!</p>
                 </div>
                 <div class="cell">
-                    <label for="caseNum">Case Number:</label><br>
+                    <label for="caseNum">Case Number: <span style="color: red; font-weight: bold">*</span></label><br>
                     <input type="number" id="caseNum" name="caseNum" minlength="8" maxlength="8" required v-model="caseNum" placeholder="XXXXXXXX"><br>
                 </div>
 
                 <div class="cell medium-6">
-                    <label for="date">Date of Incident:</label><br>
+                    <label for="date">Date of Incident: <span style="color: red; font-weight: bold">*</span></label><br>
                     <input type="date" id="date" name="date" required v-model="dateI"><br>
                 </div>
                 <div class="cell medium-6">
-                    <label for="time">Time of Incident:</label><br>
+                    <label for="time">Time of Incident: <span style="color: red; font-weight: bold">*</span></label><br>
                     <input type="time" id="time" name="time" required v-model="timeI"><br>
                 </div>
 
                 <div class="cell medium-6">
-                    <label for="code">Incident Code:</label><br>
+                    <label for="code">Incident Code: <span style="color: red; font-weight: bold">*</span></label><br>
                     <input type="number" id="code" name="code" required v-model="code" placeholder="XXX"><br>
                 </div>
 
                 <div class="cell medium-6">
-                    <label for="Incident">What was the Incident?:</label><br>
+                    <label for="Incident">What was the Incident?: <span style="color: red; font-weight: bold">*</span></label><br>
                 <input type="text" id="Incident" name="Incident" required v-model="IncidentName" placeholder="EX: Robbery"><br>
                 </div>
 
                 <div class="cell">
-                    <label for="Police_grid">Police Grid:</label><br>
+                    <label for="Police_grid">Police Grid: <span style="color: red; font-weight: bold">*</span></label><br>
                     <input type="number" id="Police_grid" name="Police_grid" required v-model="Police_grid" placeholder="XXX"><br>
                 </div>
 
                 <div class="cell medium-6">
-                    <label for="neighborhoodNum">Neighborhood Number:</label><br>
+                    <label for="neighborhoodNum">Neighborhood Number: <span style="color: red; font-weight: bold">*</span></label><br>
                     <input type="number" id="neighborhoodNum" name="neighborhoodNum" required v-model="NeighNum" placeholder="XXX"><br>
                 </div>
 
                 <div class="cell medium-6">
-                    <label for="address">Address of the Incident taken place:</label><br>
+                    <label for="address">Address of the Incident: <span style="color: red; font-weight: bold">*</span></label><br>
                     <input type="text" id="address" name="address" required v-model="AddressI" placeholder="EX: 123 Street Ave"><br>
                 </div>
                 <div class="cell">
