@@ -2,11 +2,12 @@
 import { reactive, ref, onMounted, initCustomFormatter } from "vue";
 import ToggleCrimeButton from "./selectButton.vue";
 
+
 let crime_url = ref("");
 let table = reactive([]);
 let dialog_err = ref(false);
 let neighborhood_array = reactive([0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16]);
-let neighborhood_numbers = reactive([]);
+let code_incident_map = reactive[{}]
 let map = reactive({
   leaflet: null,
   center: {
@@ -117,13 +118,6 @@ onMounted(() => {
 
   map.leaflet.on("moveend", function () {
     var center = map.leaflet.getCenter();
-    /* var bounds = map.leaflet.getBounds();
-    var nwCoordinates = bounds.getNorthWest();
-    console.log(nwCoordinates.lat);
-    var seCoordinates = bounds.getSouthEast();
-    console.log(seCoordinates);
-    map.bounds = {nw: {lat: nwCoordinates.lat, lng: nwCoordinates.lng}, se: {lat: seCoordinates.lat, lng: seCoordinates.lng}};
-    console.log(map.bounds) */
     var latitude = document.getElementById("latitude");
     var longitude = document.getElementById("longitude");
     var address = document.getElementById("address");
@@ -156,34 +150,18 @@ function getNeighborhoodNumbers(){
   var bounds = map.leaflet.getBounds();
   var nw_bounds = bounds.getNorthWest();
   var se_bounds = bounds.getSouthEast();
-  console.log("nw_bounds" + nw_bounds);
-  console.log("lat? = "+nw_bounds.lat);
   var nw_lat = nw_bounds.lat;
   var se_lat = se_bounds.lat;
   var nw_lng = nw_bounds.lng;
   var se_lng = se_bounds.lng;
-  // console.log(se_bounds);
   map.neighborhood_markers.forEach(function(markerData, index) {
     var lat = markerData.location[0];
     var lng = markerData.location[1];
-    console.log(lat);
-    console.log(nw_lat);
-    console.log(se_lat);
-    console.log('lng'+lng);
-    console.log(nw_lng);
-    console.log(se_lng);
     if ((lat < nw_lat) && (lat > se_lat) && ((lng > nw_lng) && (lng < se_lng))) {
-        console.log("neighborhood included!");
-        // console.log(markerData.location);
         neighborhood_array.push(index);
     }
   });
-  console.log(neighborhood_array);
   return neighborhood_array;
-  //filter using a v-if the table
-  //table_length > 0 
-  
-  // table = table.filter((item) => array.includes(item.neighborhood_number))
 }
 
 
@@ -259,6 +237,8 @@ function initializeCrimes() {
           neighborhood_number: crime.neighborhood_number,
         });
 
+        
+
         Object.keys(crimes_num_table).forEach((neigh) => {
           if (neighborhood_map[crime.neighborhood_number] == neigh) {
             crimes_num_table[neigh]++;
@@ -331,13 +311,11 @@ function pressGo() {
   if (address.trim() !== "") {
     // see if an address was entered
     address = address.replaceAll(" ", "+"); // change spaces to pluses
-    // console.log(address)
     var baseUrl = "https://nominatim.openstreetmap.org/search?q=";
     var fetchUrl =
       baseUrl +
       address +
       "+Saint+Paul+Minnesota&format=json&polygon=1&addressdetails=1";
-    // console.log(fetchUrl);
 
     fetch(fetchUrl)
       .then((response) => {
@@ -348,7 +326,6 @@ function pressGo() {
         map.leaflet.setView(newCenter, 14, { animate: true }); // move the map to the new center and zoom in
       });
   } else if (latitude.trim() !== "" && longitude.trim() !== "") {
-    console.log("both lat and long are entred");
     var fetchUrl =
       "https://nominatim.openstreetmap.org/reverse?format=json&lat=" +
       latitude +
@@ -359,9 +336,7 @@ function pressGo() {
         return response.json();
       })
       .then((json) => {
-        console.log(json);
         var location = json.display_name;
-        console.log(location);
         //should we update the address box with this display name?
         map.leaflet.setView([latitude, longitude], 14, { animate: true }); // move the map to the new center and zoom in
       });
@@ -385,22 +360,34 @@ const selectCrime = (address, date, time, incident, case_number) => {
     baseUrl +
     address +
     "+Saint Paul+Minnesota&format=json&polygon=1&addressdetails=1";
-  console.log(fetchUrl);
   fetch(fetchUrl)
     .then((response) => {
       return response.json();
     })
-
     .then((json) => {
       let markerLocation = [json[0].lat, json[0].lon];
+
+      // Create an HTML string that includes details and the button
+      const popupContent = `<div>
+                              <b>Date:</b> ${date} </br>
+                              <b>Time:</b> ${time} </br>
+                              <b>Incident:</b> ${incident}<br/>
+                              <button id="removeButton" class="button" type="button">Remove</button>
+                            </div>`;
+
       const marker = L.marker(markerLocation, { icon: redIcon })
         .addTo(map.leaflet)
-        .bindPopup(
-          `<b>Date:</b> ${date} </br>
-          <b>Time:</b> ${time} </br>
-          <b>Incident:</b> ${incident}`
-        )
-        .openPopup();
+        .bindPopup(popupContent)
+        .on('popupopen', function () {
+          // Attach event listener to the button after the popup is open
+          document.getElementById('removeButton').addEventListener('click', function () {
+            // Remove the marker when the button is clicked
+            removeMarker(case_number);
+          });
+        });
+      
+      marker.openPopup();
+
       map.crime_markers.push({
         location: markerLocation,
         marker: marker,
@@ -412,23 +399,15 @@ const selectCrime = (address, date, time, incident, case_number) => {
     });
 };
 
-const unselectCrime = (address, case_number) => {
-  let indexToRemove = -1;
 
-  map.crime_markers.forEach((item, index) => {
-    if (item.case_number === case_number) {
-      console.log(item.case_number);
-      indexToRemove = index;
-    }
-  });
+const removeMarker = (case_number) => {
+  let indexToRemove = map.crime_markers.findIndex((item) => item.case_number === case_number);
 
   if (indexToRemove !== -1) {
     let markerToRemove = map.crime_markers[indexToRemove].marker;
-    console.log(markerToRemove);
 
     // Assuming markerToRemove is a Leaflet marker
     if (map.leaflet && markerToRemove) {
-      console.log(markerToRemove);
       markerToRemove.remove();
       map.leaflet.removeLayer(markerToRemove);
       map.crime_markers.splice(indexToRemove, 1); // Remove the marker from the array
@@ -482,7 +461,7 @@ const unselectCrime = (address, case_number) => {
 
   <div id="checkboxList">
     <label><input type="checkbox"> Narcotics</label>
-    <label><input type="checkbox"> Proactive Polic Visit</label>
+    <label><input type="checkbox"> Proactive Police Visit</label>
     <label><input type="checkbox"> Discharge </label>
     <label><input type="checkbox"> Theft</label>
     <label><input type="checkbox"> Robbery </label>
@@ -533,7 +512,7 @@ const unselectCrime = (address, case_number) => {
             :incident="item.incident"
             :case_number="item.case_number"
             :onSelect="selectCrime"
-            :onUnselect="unselectCrime"
+            :onUnselect="removeMarker"
           ></ToggleCrimeButton>
         </td>
         <td>
