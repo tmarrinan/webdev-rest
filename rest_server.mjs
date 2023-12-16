@@ -45,25 +45,6 @@ function dbSelect(query, params) {
     });
 }
 
-// // this funciton is from the server.mjs we wrote in dynamiccereal - this works, the above function does not work for me
-// function dbSelect(query, params) {
-//     let p = new Promise((resolve, reject) => {
-//         //inside here we put our asynchronous calls
-//         //we 
-//         db.all(query, params, (err, rows) => {
-//             if (err) {
-//                 reject(err); //this will trigger the .catch block
-//             }
-//             else {
-//                 resolve(rows);
-//             }
-//         })  //then the parameters that substitue for our question marks
-//     });
-//     return p;
-// }
-
-
-// Create Promise for SQLite3 database INSERT or DELETE query
 function dbRun(query, params) {
     return new Promise((resolve, reject) => {
         db.run(query, params, (err) => {

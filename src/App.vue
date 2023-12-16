@@ -43,25 +43,25 @@ let map = reactive({
 
 const getClassForTableRow = (incident) => {
   if (
-      incident.toLowerCase().includes("homicide") ||
-      incident.toLowerCase().includes("murder") ||
-      incident.toLowerCase().includes("rape") ||
-      incident.toLowerCase().includes("robbery") ||
-      incident.toLowerCase().includes("assault") ||
-      incident.toLowerCase().includes("arson")
-    ) {
-      return "highlight-red";
-    } else if (
-      incident.toLowerCase().includes("burglary") ||
-      incident.toLowerCase().includes("theft") ||
-      incident.toLowerCase().includes("property") ||
-      incident.toLowerCase().includes("graffiti")
-    ) {
-      return "highlight-orange";
-    } else {
-      return "highlight-yellow";
-    }
+    incident.toLowerCase().includes("homicide") ||
+    incident.toLowerCase().includes("murder") ||
+    incident.toLowerCase().includes("rape") ||
+    incident.toLowerCase().includes("robbery") ||
+    incident.toLowerCase().includes("assault") ||
+    incident.toLowerCase().includes("arson")
+  ) {
+    return "highlight-red";
+  } else if (
+    incident.toLowerCase().includes("burglary") ||
+    incident.toLowerCase().includes("theft") ||
+    incident.toLowerCase().includes("property") ||
+    incident.toLowerCase().includes("graffiti")
+  ) {
+    return "highlight-orange";
+  } else {
+    return "highlight-yellow";
   }
+};
 
 // Vue callback for once <template> HTML has been added to web page
 onMounted(() => {
@@ -117,6 +117,13 @@ onMounted(() => {
 
   map.leaflet.on("moveend", function () {
     var center = map.leaflet.getCenter();
+    /* var bounds = map.leaflet.getBounds();
+    var nwCoordinates = bounds.getNorthWest();
+    console.log(nwCoordinates.lat);
+    var seCoordinates = bounds.getSouthEast();
+    console.log(seCoordinates);
+    map.bounds = {nw: {lat: nwCoordinates.lat, lng: nwCoordinates.lng}, se: {lat: seCoordinates.lat, lng: seCoordinates.lng}};
+    console.log(map.bounds) */
     var latitude = document.getElementById("latitude");
     var longitude = document.getElementById("longitude");
     var address = document.getElementById("address");
@@ -206,49 +213,40 @@ function replaceIncompleteAddress(address) {
 // FUNCTIONS
 // Function called once user has entered REST API URL
 function initializeCrimes() {
-  // TODO: get code and neighborhood data
-  //       get initial 1000 crimes
-  console.log(crime_url.value);
   let code_map = {};
   let neighborhood_map = {};
-  let crimes_num_table = {};
-  fetch(crime_url.value + "/codes")
-    .then((response) => {
-      return response.json();
-    })
-    .then((json) => {
-      json.forEach((code_object) => {
+  let crimes_num_table = {}; 
+
+  // Function to handle fetch and return a promise
+  function fetchData(url) {
+    return fetch(crime_url.value + url)
+      .then((response) => response.json())
+      .catch((error) => {
+        console.log("error");
+        console.log(error);
+      });
+  }
+
+  // Use Promise.all to execute all fetch requests concurrently
+  Promise.all([
+    fetchData("/codes"),
+    fetchData("/neighborhoods"),
+    fetchData("/incidents")
+  ])
+    .then(([codes, neighborhoods, incidents]) => {
+      // Process codes
+      codes.forEach((code_object) => {
         code_map[code_object.code] = code_object.type;
       });
-    })
-    .catch((error) => {
-      console.log("error");
-      console.log(error);
-    });
 
-  fetch(crime_url.value + "/neighborhoods")
-    .then((response) => {
-      return response.json();
-    })
-    .then((json) => {
-      json.forEach((neigh_object) => {
+      // Process neighborhoods
+      neighborhoods.forEach((neigh_object) => {
         neighborhood_map[neigh_object.id] = neigh_object.name;
         crimes_num_table[neigh_object.name] = 0;
       });
 
-      console.log(crimes_num_table);
-    })
-    .catch((error) => {
-      console.log("error");
-      console.log(error);
-    });
-
-  fetch(crime_url.value + "/incidents")
-    .then((response) => {
-      return response.json(); //we need to tell it how we want the result, which is in json
-    })
-    .then((json) => {
-      json.forEach((crime) => {
+      // Process incidents
+      incidents.forEach((crime) => {
         table.push({
           case_number: crime.case_number,
           incident_type: code_map[crime.code],
@@ -260,6 +258,7 @@ function initializeCrimes() {
           time: crime.time,
           neighborhood_number: crime.neighborhood_number,
         });
+
         Object.keys(crimes_num_table).forEach((neigh) => {
           if (neighborhood_map[crime.neighborhood_number] == neigh) {
             crimes_num_table[neigh]++;
@@ -267,6 +266,7 @@ function initializeCrimes() {
         });
       });
 
+      // Update the map
       map.neighborhood_markers.forEach((marker, index) => {
         L.marker(marker.location)
           .addTo(map.leaflet)
@@ -275,13 +275,12 @@ function initializeCrimes() {
           )
           .openPopup();
       });
+      
     })
     .catch((error) => {
       console.log("error");
       console.log(error);
     });
-
-  console.log(table);
 }
 
 // Function called when user presses 'OK' on dialog box
@@ -291,11 +290,9 @@ function closeDialog() {
   if (crime_url.value !== "" && url_input.checkValidity()) {
     dialog_err.value = false;
     dialog.close();
-
     initializeCrimes();
     map.leaflet.on('moveend', getNeighborhoodNumbers);
     console.log("valid");
-    //add event listener for a new function?
   } else {
     dialog_err.value = true;
   }
@@ -357,7 +354,6 @@ function pressGo() {
       latitude +
       "&lon=" +
       longitude;
-
     fetch(fetchUrl)
       .then((response) => {
         return response.json();
@@ -419,8 +415,6 @@ const selectCrime = (address, date, time, incident, case_number) => {
 const unselectCrime = (address, case_number) => {
   let indexToRemove = -1;
 
-  console.log(case_number);
-
   map.crime_markers.forEach((item, index) => {
     if (item.case_number === case_number) {
       console.log(item.case_number);
@@ -440,8 +434,8 @@ const unselectCrime = (address, case_number) => {
       map.crime_markers.splice(indexToRemove, 1); // Remove the marker from the array
     }
   }
-
 };
+
 </script>
 <template>
   <dialog id="rest-dialog" open>
@@ -517,13 +511,13 @@ const unselectCrime = (address, case_number) => {
         <th>delete incident</th>
       </tr>
     </thead>
-    <tbody>
-      
+    <tbody>      
 
       <template v-for="item in table" :key="item.case_number">
           <template v-if="neighborhood_array.includes(item.neighborhood_number)">
-       <tr :id="getClassForTableRow(item.incident_type.trim())">
+       <tr class="unstriped" :id="getClassForTableRow(item.incident_type.trim())">
               <td>{{ item.case_number }}</td>
+
         <td>{{ item.incident_type }}</td>
         <td>{{ item.incident }}</td>
         <td>{{ item.grid }}</td>
@@ -593,7 +587,35 @@ const unselectCrime = (address, case_number) => {
 }
 
 #highlight-red {
-  background-color: #FF4D4D;
+  background-color: #ff4d4d;
+}
+
+#highlight-orange {
+  background-color: #ffa500;
+}
+
+#highlight-yellow {
+  background-color: lightgray;
+}
+
+.legend {
+  margin-bottom: 1%;
+}
+
+.legend-item {
+  margin-right: 1%;
+  padding: 0.5%;
+  border: 1px black;
+}
+
+.violent-crime {
+  background-color: #ff4d4d;
+}
+.property-crime {
+  background-color: #ffa500;
+}
+.other-crime {
+  background-color: lightgray;
 }
 
 #highlight-orange {
