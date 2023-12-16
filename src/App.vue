@@ -5,6 +5,8 @@ import ToggleCrimeButton from "./selectButton.vue";
 let crime_url = ref("");
 let table = reactive([]);
 let dialog_err = ref(false);
+let neighborhood_array = reactive([0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16]);
+let neighborhood_numbers = reactive([]);
 let map = reactive({
   leaflet: null,
   center: {
@@ -38,6 +40,28 @@ let map = reactive({
   ],
   crime_markers: [],
 });
+
+const getClassForTableRow = (incident) => {
+  if (
+      incident.toLowerCase().includes("homicide") ||
+      incident.toLowerCase().includes("murder") ||
+      incident.toLowerCase().includes("rape") ||
+      incident.toLowerCase().includes("robbery") ||
+      incident.toLowerCase().includes("assault") ||
+      incident.toLowerCase().includes("arson")
+    ) {
+      return "highlight-red";
+    } else if (
+      incident.toLowerCase().includes("burglary") ||
+      incident.toLowerCase().includes("theft") ||
+      incident.toLowerCase().includes("property") ||
+      incident.toLowerCase().includes("graffiti")
+    ) {
+      return "highlight-orange";
+    } else {
+      return "highlight-yellow";
+    }
+  }
 
 // Vue callback for once <template> HTML has been added to web page
 onMounted(() => {
@@ -89,6 +113,7 @@ onMounted(() => {
     .catch((error) => {
       console.log("Error:", error);
     });
+    
 
   map.leaflet.on("moveend", function () {
     var center = map.leaflet.getCenter();
@@ -113,11 +138,47 @@ onMounted(() => {
         map.center = center;
         address.value = location;
         map.center.address = location;
-        //shouldn't we be able to initailize the crimes here....?
       });
-      //or even out here to initailizeCrimes?
   });
 });
+
+function getNeighborhoodNumbers(){
+  // neighborhood_array.slice(0, neighborhood_array.length);
+  neighborhood_array.length = 0; // Clear the array
+
+  var bounds = map.leaflet.getBounds();
+  var nw_bounds = bounds.getNorthWest();
+  var se_bounds = bounds.getSouthEast();
+  console.log("nw_bounds" + nw_bounds);
+  console.log("lat? = "+nw_bounds.lat);
+  var nw_lat = nw_bounds.lat;
+  var se_lat = se_bounds.lat;
+  var nw_lng = nw_bounds.lng;
+  var se_lng = se_bounds.lng;
+  // console.log(se_bounds);
+  map.neighborhood_markers.forEach(function(markerData, index) {
+    var lat = markerData.location[0];
+    var lng = markerData.location[1];
+    console.log(lat);
+    console.log(nw_lat);
+    console.log(se_lat);
+    console.log('lng'+lng);
+    console.log(nw_lng);
+    console.log(se_lng);
+    if ((lat < nw_lat) && (lat > se_lat) && ((lng > nw_lng) && (lng < se_lng))) {
+        console.log("neighborhood included!");
+        // console.log(markerData.location);
+        neighborhood_array.push(index);
+    }
+  });
+  console.log(neighborhood_array);
+  return neighborhood_array;
+  //filter using a v-if the table
+  //table_length > 0 
+  
+  // table = table.filter((item) => array.includes(item.neighborhood_number))
+}
+
 
 function replaceIncompleteAddress(address) {
   const addressParts = address.split(" ");
@@ -146,7 +207,7 @@ function replaceIncompleteAddress(address) {
 // Function called once user has entered REST API URL
 function initializeCrimes() {
   // TODO: get code and neighborhood data
-  console.log("in initialize crimes");
+  //       get initial 1000 crimes
   console.log(crime_url.value);
   let code_map = {};
   let neighborhood_map = {};
@@ -197,6 +258,7 @@ function initializeCrimes() {
           block: replaceIncompleteAddress(crime.block),
           date: crime.date,
           time: crime.time,
+          neighborhood_number: crime.neighborhood_number,
         });
         Object.keys(crimes_num_table).forEach((neigh) => {
           if (neighborhood_map[crime.neighborhood_number] == neigh) {
@@ -229,10 +291,11 @@ function closeDialog() {
   if (crime_url.value !== "" && url_input.checkValidity()) {
     dialog_err.value = false;
     dialog.close();
-    // var bounds = map.leaflet.getBounds();
+
     initializeCrimes();
-    map.leaflet.on('moveend', handleMapMove);
+    map.leaflet.on('moveend', getNeighborhoodNumbers);
     console.log("valid");
+    //add event listener for a new function?
   } else {
     dialog_err.value = true;
   }
@@ -261,11 +324,6 @@ function deleteIncident(caseNumber) {
       console.error("Error:", error);
       throw error;
     });
-}
-
-function handleMapMove() {
-    // initializeCrimes(map.leaflet.getBounds());
-    initializeCrimes();
 }
 
 function pressGo() {
@@ -339,7 +397,7 @@ const selectCrime = (address, date, time, incident, case_number) => {
 
     .then((json) => {
       let markerLocation = [json[0].lat, json[0].lon];
-      const marker = L.marker(markerLocation, {icon: redIcon})
+      const marker = L.marker(markerLocation, { icon: redIcon })
         .addTo(map.leaflet)
         .bindPopup(
           `<b>Date:</b> ${date} </br>
@@ -361,27 +419,28 @@ const selectCrime = (address, date, time, incident, case_number) => {
 const unselectCrime = (address, case_number) => {
   let indexToRemove = -1;
 
-  console.log(case_number)
+  console.log(case_number);
 
   map.crime_markers.forEach((item, index) => {
     if (item.case_number === case_number) {
-      console.log(item.case_number)
+      console.log(item.case_number);
       indexToRemove = index;
     }
   });
 
   if (indexToRemove !== -1) {
     let markerToRemove = map.crime_markers[indexToRemove].marker;
-    console.log(markerToRemove)
+    console.log(markerToRemove);
 
     // Assuming markerToRemove is a Leaflet marker
     if (map.leaflet && markerToRemove) {
-      console.log(markerToRemove)
-      markerToRemove.remove()
+      console.log(markerToRemove);
+      markerToRemove.remove();
       map.leaflet.removeLayer(markerToRemove);
       map.crime_markers.splice(indexToRemove, 1); // Remove the marker from the array
     }
   }
+
 };
 </script>
 <template>
@@ -421,7 +480,29 @@ const unselectCrime = (address, case_number) => {
     <button class="button" type="button" @click="pressGo">Go</button>
   </div>
 
-  <table v-if="table.length > 0">
+  <div class="legend">
+    <span class="legend-item violent-crime">Violent Crime</span>
+    <span class="legend-item property-crime">Property Crime</span>
+    <span class="legend-item other-crime">Other Crime</span>
+  </div>
+
+  <div id="checkboxList">
+    <label><input type="checkbox"> Narcotics</label>
+    <label><input type="checkbox"> Proactive Polic Visit</label>
+    <label><input type="checkbox"> Discharge </label>
+    <label><input type="checkbox"> Theft</label>
+    <label><input type="checkbox"> Robbery </label>
+    <label><input type="checkbox"> Community Event</label>
+    <label><input type="checkbox"> Auto Theft</label>
+    <label><input type="checkbox"> Criminal Damage</label>
+    <label><input type="checkbox"> Burglary</label>
+    <label><input type="checkbox"> Simple Assault Dom</label>
+    <label><input type="checkbox"> Agg. Assault Dom</label>  
+    <label><input type="checkbox"> Agg. Assault</label>
+  </div>
+
+
+  <table class = "unstriped" v-if="table.length > 0">
     <thead>
       <tr>
         <th>case_number</th>
@@ -437,7 +518,22 @@ const unselectCrime = (address, case_number) => {
       </tr>
     </thead>
     <tbody>
-      <tr v-for="item in table">
+      
+      <!-- <tr
+        v-for="item in table"
+        :id="getClassForTableRow(item.incident_type.trim())"
+        v-if="neighborhood_array.includes(item.neighborhood_number)"
+      > -->
+      <tr>
+        {{ neighborhood_array }}
+        {{ neighborhood_numbers }}
+      </tr>
+
+      <template v-for="item in table" :key="item.case_number">
+          <template v-if="neighborhood_array.includes(item.neighborhood_number)">
+       <tr :id="getClassForTableRow(item.incident_type.trim())">
+      
+        <td>{{ neighborhood_array.includes(item.neighborhood_number)}} </td>
         <td>{{ item.case_number }}</td>
         <td>{{ item.incident_type }}</td>
         <td>{{ item.incident }}</td>
@@ -467,6 +563,8 @@ const unselectCrime = (address, case_number) => {
           </button>
         </td>
       </tr>
+      </template>
+      </template>
     </tbody>
   </table>
 </template>
@@ -505,11 +603,39 @@ const unselectCrime = (address, case_number) => {
   background-color: red;
 }
 
+#highlight-red {
+  background-color: #FF4D4D;
+}
+
+#highlight-orange {
+  background-color: #FFA500;
+}
+
+#highlight-yellow {
+  background-color: lightgray
+}
+
+.legend {
+  margin-bottom: 1%;
+}
+
+.legend-item {
+  margin-right: 1% ;
+  padding: 0.5%;
+  border: 1px black;
+}
+
+.violent-crime { background-color: #FF4D4D; }
+.property-crime { background-color: #FFA500; }
+.other-crime { background-color: lightgray;}
+
 .ui-row {
   display: inline-block;
   margin-right: 15px;
-  /* Adjust spacing between input boxes */
 }
+
+#checkboxList label {
+      display: inline-block;
+      margin-right: 10px; 
+    }
 </style>
-
-
