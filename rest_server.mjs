@@ -57,7 +57,20 @@ function dbRun(query, params) {
     });
 }
 
-
+function codeRangeInstant(range){
+    let codeRange = range.split('-');
+    let sql = '';
+    if(codeRange[0].toLowerCase() == 'x'){
+        sql += "code <= ?";
+        return {sql: sql, paramAmt: 1, param: codeRange[1]};
+    }
+    else if(codeRange[1].toLowerCase() == 'x'){
+        sql += "code >= ?";
+        return {sql: sql, params: 1, param: codeRange[0]};
+    }
+    sql += 'code >= ? AND code <= ?';
+    return {sql: sql, paramAmt: 2, params: [parseInt(codeRange[0]), parseInt(codeRange[1])]}
+}
 
 
 
@@ -72,6 +85,7 @@ function dbRun(query, params) {
  ********************************************************************/
 // GET request handler for crime codes (COMPLETED)
 //EX: http://localhost:8000/codes?code=10
+//EX: http://localhost:8000/codes?code_range=x-200,300-350,415-500,800-x
 app.get('/codes', (req, res) => {
     //console.log(req.query); // query object (key-value pairs after the ? in the url)
 
@@ -85,6 +99,24 @@ app.get('/codes', (req, res) => {
         for(let i=1; i<codes.length; i++){
             sql += ' OR code = ?';
             params.push(parseInt(codes[i]));
+        }
+    }else if(req.query.hasOwnProperty('code_range')){
+        let codeRange = req.query.code_range.split(',');
+        sql += ' WHERE ';
+        let count = 0;
+        for(let i=0; i<codeRange.length; i++){
+            let codeInfo = codeRangeInstant(codeRange[i]);
+            if(count != 0){
+                sql += ' OR ';
+            }
+            sql += codeInfo.sql;
+            if(codeInfo.paramAmt == 2){
+                params.push(codeInfo.params[0]);
+                params.push(codeInfo.params[1]);
+            }else{
+                params.push(codeInfo.param);
+            }
+            count++;
         }
     }
     //Order from least to greatest
