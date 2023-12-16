@@ -20,7 +20,10 @@ let location = ref('');
 let id = 0;
 const tags = ref([]);
 
-let newTag = ref('');
+let newTag = ref(''); //testing purposes can delete later
+let neighborhood_names;
+let addNeighborhoods = ref(true);
+let neighborhoods = ref();
 let startDate = ref();
 let endDate = ref();
 let limit = ref();
@@ -32,8 +35,10 @@ let addLimit = ref(true);
 let refs = {
     startDate: startDate,   addStartDate: addStartDate,
     endDate: endDate,       addEndDate: addEndDate,
-    limit: limit,           addLimit: addLimit
+    limit: limit,           addLimit: addLimit,
+    neighborhoods: neighborhoods, addNeighborhoods: addNeighborhoods
 };
+let multiTagHistory = {}
 let addFilter1 = ref(true); //testing purposes can delete later
 let myRefs = {newTag: newTag, addFilter1: addFilter1}; //testing purposes can delete later
 
@@ -49,13 +54,29 @@ function addTag(tag, addButton, title='', revert=true){
     if(tag.value == '' || tag.value == null){
         return;
     }
-    if(tag.revert){
+    if(revert){
         addButton.value = false;
     }
     tags.value.push({
         id: id++, text: title + tag.value,
         button: addButton, revert: revert
     });
+}
+
+function addMultiTag(tag, addButton, title='', revert=true){
+    console.log(tag);
+    if(tag.value == '' || tag.value == null){
+        return;
+    }
+    // if(multiTagHistory.some((multiTag)=>{
+    //     multiTag === tag;
+    // })){
+    //     console.log("added ", neighborhood_names[tag+1].name);
+    //     multiTagHistory[tag] = neighborhood_names[tag+1].name;
+    // }else{
+    //     console.log("dont add");
+    // }
+    
 }
 
 function removeTag(tag){
@@ -127,12 +148,13 @@ onMounted(() => {
         console.log('Error:', error);
     });
     
-    fetch('http://localhost:8001/neighborhoods?&limit=1')
+    fetch('http://localhost:8001/neighborhoods')
     .then((response) => {
         return response.json();
     })
     .then((data) => {
         console.log(data);
+        neighborhood_names = data; //id = 1+index
     })
     .catch((error) => {
         console.log('Error:', error);
@@ -254,7 +276,7 @@ function uploadIncidents(){
                         <label class="dialog-label">Location: </label>
                         <input id="dialog-loc" class="dialog-input" v-model="location" placeholder="Enter a location" />
                         <div class="grid-x">
-                            <select id="filter1" class="cell small-4" style="height: 2.6rem;" v-model="newTag" >
+                            <select id="filter1" class="cell small-4 input-filter" v-model="newTag" >
                                 <option value="" selected disabled hidden>Filter</option> 
                                 <option value="a">a</option>
                                 <option value="b">b</option>
@@ -263,20 +285,31 @@ function uploadIncidents(){
                             <button v-if="addFilter1" class="button cell small-2" type="button" @click="addTag(myRefs.newTag, myRefs.addFilter1, '', false)" >+</button>
                         </div>
                         <div class="grid-x">
+                            <label for="neighborhood" class="cell small-12">Neighborhood Name</label>
+                            <select id="neighborhood" class="cell small-5 input-filter" v-model="neighborhoods" >
+                                <option value="" selected disabled hidden>Select Neighborhood</option> 
+                                <option
+                                    v-for="neighborhood in neighborhood_names" :key="neighborhood.id"
+                                        value="{{ neighborhood.id }}">
+                                        {{ neighborhood.name }}
+                                </option>
+                            </select>
+                            <button v-if="addNeighborhoods" class="button cell small-2" type="button" @click="addMultiTag(refs.neighborhoods, refs.addNeighborhoods)" >+</button>
+                        </div>
+                        <div class="grid-x">
                             <label for="start-date" class="cell small-12">Start Date</label>
-                            <input v-model="startDate" class="cell small-4 grid-container" type="date" id="start-date" pattern="\d{4}-\d{2}-\d{2}">
-                            <button v-if="addStartDate" class="button cell small-2" type="button" @click="validateAndAdd('start-date', refs.startDate, refs.addStartDate, 'Start Date: ')" >+</button>
+                            <input v-model="startDate" class="cell small-4 grid-container input-filter" type="date" id="start-date" pattern="\d{4}-\d{2}-\d{2}">
+                            <!-- <button v-if="addStartDate" class="button cell small-2" type="button" @click="validateAndAdd('start-date', refs.startDate, refs.addStartDate, 'Start Date: ')" >+</button> -->
                         </div>
                         <div class="grid-x">
                             <label for="end-date" class="cell small-12">End Date</label>
-                            <input v-model="endDate" class="cell small-4 grid-container" type="date" id="end-date" pattern="\d{4}-\d{2}-\d{2}">
-                            <!-- <button v-if="addEndDate" class="button cell small-2" type="button" @click="addTag(refs.endDate, refs.addEndDate, 'End Date: ')" >+</button> -->
-                            <button v-if="addEndDate" class="button cell small-2" type="button" @click="validateAndAdd('end-date', refs.endDate, refs.addEndDate, 'End Date: ')" >+</button>
+                            <input v-model="endDate" class="cell small-4 grid-container input-filter" type="date" id="end-date" pattern="\d{4}-\d{2}-\d{2}">
+                            <!-- <button v-if="addEndDate" class="button cell small-2" type="button" @click="validateAndAdd('end-date', refs.endDate, refs.addEndDate, 'End Date: ')" >+</button> -->
                         </div>
                         <div class="grid-x">
                             <label for="limit" class="cell small-12">Limit</label>
-                            <input v-model="limit" class="cell small-4 grid-container" type="number" id="limit" placeholder="1000">
-                            <button v-if="addLimit" class="button cell small-2" type="button" @click="addTag(refs.limit, refs.addLimit, 'Limit: ', true)" >+</button>
+                            <input v-model="limit" class="cell small-4 grid-container input-filter" type="number" id="limit" placeholder="1000">
+                            <!-- <button v-if="addLimit" class="button cell small-2" type="button" @click="addTag(refs.limit, refs.addLimit, 'Limit: ', true)" >+</button> -->
                         </div>
                         <button class="button cell" type="button" @click="closeDialog">GO</button>
                     </div>

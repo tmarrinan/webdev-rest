@@ -10,13 +10,33 @@ let location = ref('');
 let crimes = ref([]);
 let codes = ref([]);
 let neighborhoods = ref([]);
+let codeCategories = reactive([
+    {name:'Murder', value:'100-200'},
+    {name:'Rape', value:'200-300'},
+    {name:'Theft', value:'300-400,500-800'},
+    {name:'Assault', value:'400-500,800-900'},
+    {name:'Arson', value:'900-1000'},
+    {name:'Other', value:'1000-x'}
+]);
+let startDate = ref();
+let endDate = ref();
+let limit = ref();
+let incidentModel = ref('');
+let neighborhoodModel = ref('');
+let vModels = {
+    incidentModel:  incidentModel,
+    neighborhoodModel: neighborhoodModel
+};
+let tagHistory=[];
 
 // filter vars
-let addFilter1 = ref(true);
-let myRefs = {addFilter1: addFilter1};
 let id = 0;
+let advancedSearch = ref(false); //set back to false after testing
 const tags = ref([]);
-let newTag = ref('');
+
+function setAdvancedSearch(bool){
+    advancedSearch.value = bool;
+}
 
 let map = reactive(
     {
@@ -137,9 +157,36 @@ function closeDialog() {
     let dialog = document.getElementById('rest-dialog');
     let url_input = document.getElementById('dialog-url');
     let loc_input = document.getElementById('dialog-loc');
-    if(loc_input.value !== ''){
-        locationTest(loc_input.value);
-        dialog.close();
+
+    if(loc_input != null && loc_input.value !== ''){
+        locationZoom(loc_input.value);
+    }else{
+        let collectiveInfo = [];
+        for(let i=0; i<tags.value.length; i++){
+            // console.log(tags.value[i].historyId.split('id=')[1]);
+            let info = tags.value[i];
+            collectiveInfo.push({type: info.type, value: info.historyId.split('id=')[1]});
+        }
+        let start = (startDate.value != null && startDate.value != '');
+        let end = (endDate.value != null && endDate.value != '');
+        let startValidDate = !(new Date(startDate.value) == 'Invalid Date');
+        let endValidDate = !(new Date(endDate.value) == 'Invalid Date');
+        let startBeforeEnd = new Date(startDate.value) < new Date(endDate.value);
+        if(start && end){
+            if(startValidDate && endValidDate && startBeforeEnd){
+                collectiveInfo.push({type: 'start_date', value: startDate.value});
+                collectiveInfo.push({type: 'end_date', value: endDate.value});
+            }
+        }else if(start && startValidDate){
+            collectiveInfo.push({type: 'start_date', value: startDate.value});
+        }else if(end && endValidDate){
+            collectiveInfo.push({type: 'end_date', value: endDate.value});
+        }
+        
+        if(limit.value != null){
+            collectiveInfo.push({type:'limit', value: limit.value});
+        }
+        console.log(collectiveInfo);
     }
     /*/
     if (crime_url.value !== '' && url_input.checkValidity()) {
@@ -154,7 +201,7 @@ function closeDialog() {
 }
 
 //in search bar try "Frogtown, MN"
-function locationTest(loc){
+function locationZoom(loc){
     let url = 'https://nominatim.openstreetmap.org/search?q='+loc+'&format=json&&limit=1';
     fetch(url)
     .then((response)=>{
@@ -176,18 +223,30 @@ function locationTest(loc){
 }
 
 function addTag(filter){
-    if(newTag.value == ''){
-        return;
+    if(filter.value == ''){
+        return; 
     }
-    if(filter != null){
-        filter.value = false;
+    let type = filter.value.split(':')[0];
+    let id = filter.value.split(':')[1];
+    let text = filter.value.split(':')[2];
+    if(!within(id, tagHistory)){
+        tagHistory.push(id);
+        tags.value.push({type: type, text: text, historyId: id});
     }
-
-    tags.value.push({id: id++, text: newTag.value});
 }
 
-function removeTag(tag){
-    tags.value = tags.value.filter((t) => t !== tag)
+function removeTag(tag, id){
+    tags.value = tags.value.filter((t) => t !== tag);
+    tagHistory = tagHistory.filter((i) => i !== id);
+}
+
+function within(target, array){
+    for(let i=0; i<array.length; i++){
+        if(target == array[i]){
+            return true;
+        }
+    }
+    return false;
 }
 
 </script>
@@ -205,29 +264,63 @@ function removeTag(tag){
     <div class="grid-container" style="padding: 0; margin-left: 0%; background-color: red; max-width: 100%;">
         <div class="grid-x" style="background-color: yellow; margin: 0; padding: 0;">
             <!-- might not need hardcoded height when all filters are added-->
-            <div id="rest-dialog" class="cell small-4 grid-container" style="background-color: green; margin: 0; padding:0;height: 500px;">
+            <div id="rest-dialog" class="cell small-4 grid-container" style="background-color: green; margin: 0; padding:0;min-height: 500px;">
                 <div class="grid-container">
                     <h1 class="dialog-header">St. Paul Crime REST API</h1>
                     <div class="grid-y grid-margin-y">
-                        <label class="dialog-label">Location: </label>
-                        <input id="dialog-loc" class="dialog-input" v-model="location" placeholder="Enter a location" />
-                        <div class="grid-x">
-                            <select id="filter1" class="cell small-4" style="height: 2.6rem;" v-model="newTag" >
-                                <option value="" selected disabled hidden>Filter</option> 
-                                <option value="a">a</option>
-                                <option value="b">b</option>
-                                <option value="c">c</option>
-                            </select>
-                            <button v-if="addFilter1" class="button cell small-2" type="button" @click="addTag(myRefs.addFilter1)" >+</button>
+                        <div class="grid-x" v-if="!advancedSearch">
+                            <label class="dialog-label">Location: </label>
+                            <input id="dialog-loc" class="dialog-input cell small-12" v-model="location" placeholder="Enter a location" />
+                            <button class="advanced-search cell small-12 large-4" type="button" @click="setAdvancedSearch(true)" >Advanced Search</button>
+                        </div>
+                        <div v-if="advancedSearch">
+                            <div class="grid-x"><button class="advanced-search cell small-12 large-4"
+                                type="button" @click="setAdvancedSearch(false)" >Revert to Searchbar</button>
+                            </div>
+                            <!-- Advanced FILTERS -->
+                            <div class="grid-x">
+                                <label for="incident-type" class="cell small-12">Incident Type</label>
+                                <select v-model="incidentModel" id="incident-type" class="cell small-10 large-6">
+                                    <option selected disabled value="">Select an Incident Type</option>
+                                    <option
+                                        v-for="types in codeCategories" :key="codeCategories.name"
+                                        :value="'code_range:id='+types.value+':'+types.name">
+                                        {{ types.name }}
+                                    </option>
+                                </select>
+                                <button class="button cell small-2" type="button" @click="addTag(vModels.incidentModel)">+</button>
+                                <label for="incident-type" class="cell small-12">Neighborhood Name</label>
+                                <select v-model="neighborhoodModel" id="code" class="small-10 large-6">
+                                    <option selected disabled value="">Select a neighborhood</option>
+                                    <option
+                                        v-for="neighborhood in neighborhoods" :key="neighborhood.value"
+                                        :value="'neighborhood: id='+neighborhood.id+':'+neighborhood.name">
+                                        {{ neighborhood.name }}
+                                    </option>
+                                </select>
+                                <button class="button cell small-2" type="button" @click="addTag(vModels.neighborhoodModel)">+</button>
+                            </div>
+                            <div class="grid-x">
+                                <label for="start-date" class="cell small-12">Start Date</label>
+                                <input v-model="startDate" class="cell small-12 large-4 grid-container input-filter" type="date" id="start-date" pattern="\d{4}-\d{2}-\d{2}">
+                            </div>
+                            <div class="grid-x">
+                                <label for="end-date" class="cell small-12">End Date</label>
+                                <input v-model="endDate" class="small-12 large-4 grid-container input-filter" type="date" id="end-date" pattern="\d{4}-\d{2}-\d{2}">
+                            </div>
+                            <div class="grid-x">
+                                <label for="limit" class="cell small-12">Limit</label>
+                                <input v-model="limit" class="cell small-12 large-4 grid-container input-filter" type="number" id="limit" placeholder="1000">
+                            </div>
                         </div>
                         <button class="button cell" type="button" @click="closeDialog">GO</button>
                     </div>
                 </div>
                 <div class="cell small-12" style="margin-top:1rem; padding: 1rem; background-color: aquamarine;">
                     <div class="button tag-button"
-                        v-for="tag in tags" :key="tag.id" >
+                        v-for="tag in tags" >
                             {{ tag.text }}
-                            <button class="tag-close" @click="removeTag(tag)">X</button>
+                            <button class="tag-close" @click="removeTag(tag, tag.historyId)">X</button>
                     </div>
                 </div>
             </div>
@@ -242,35 +335,5 @@ function removeTag(tag){
 </template>
 
 <style scoped>
-/**
-#rest-dialog {
-    width: 20rem;
-    margin-top: 1rem;
-    z-index: 1000;
-}
 
-#leafletmap {
-    margin: 60px;
-    height: 500px;
-}
-
-.dialog-header {
-    font-size: 1.2rem;
-    font-weight: bold;
-}
-
-.dialog-label {
-    font-size: 1rem;
-}
-
-.dialog-input {
-    font-size: 1rem;
-    width: 100%;
-}
-
-.dialog-error {
-    font-size: 1rem;
-    color: #D32323;
-}
-/**/
 </style>
