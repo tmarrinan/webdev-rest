@@ -83,21 +83,21 @@ onMounted(() => {
   ]);
 
   // write the address in that's on the center of the map when initially start the app
-  var address = document.getElementById("address");
-  var fetchUrl =
-    "https://nominatim.openstreetmap.org/reverse?format=json&lat=" +
-    map.center.lat +
-    "&lon=" +
-    map.center.lng;
-  fetch(fetchUrl)
-    .then((response) => {
-      return response.json();
-    })
-    .then((json) => {
-      var location = json.display_name;
-      address.value = location;
-      map.center.address = location;
-    });
+  // var address = document.getElementById("address");
+  // var fetchUrl =
+  //   "https://nominatim.openstreetmap.org/reverse?format=json&lat=" +
+  //   map.center.lat +
+  //   "&lon=" +
+  //   map.center.lng;
+  // fetch(fetchUrl)
+  //   .then((response) => {
+  //     return response.json();
+  //   })
+  //   .then((json) => {
+  //     var location = json.display_name;
+  //     address.value = location;
+  //     map.center.address = location;
+  //   });
 
   // Get boundaries for St. Paul neighborhoods
   let district_boundary = new L.geoJson();
@@ -116,14 +116,48 @@ onMounted(() => {
     });
     
 
-  map.leaflet.on("moveend", function () {
+  // map.leaflet.on("moveend", function () {
+  //   var center = map.leaflet.getCenter();
+  //   var latitude = document.getElementById("latitude");
+  //   var longitude = document.getElementById("longitude");
+  //   var address = document.getElementById("address");
+
+  //   latitude.value = center.lat; //update the boxes with the current center
+  //   longitude.value = center.lng;
+
+  //   var fetchUrl =
+  //     "https://nominatim.openstreetmap.org/reverse?format=json&lat=" +
+  //     map.center.lat +
+  //     "&lon=" +
+  //     map.center.lng;
+  //   fetch(fetchUrl)
+  //     .then((response) => {
+  //       return response.json();
+  //     })
+  //     .then((json) => {
+  //       var location = json.display_name;
+  //       map.center = center;
+  //       address.value = location;
+  //       map.center.address = location;
+  //     });
+  // });
+});
+
+function getNeighborhoodNumbers(){
+
+  // map.leaflet.on("moveend", function () {
+    // console.log("current map.center: "+map.center);
     var center = map.leaflet.getCenter();
+    // console.log("currnet map.getCenter(): "+center);
     var latitude = document.getElementById("latitude");
     var longitude = document.getElementById("longitude");
     var address = document.getElementById("address");
 
     latitude.value = center.lat; //update the boxes with the current center
     longitude.value = center.lng;
+    map.center.lat = center.lat;
+    map.center.lng = center.lng;
+    // console.log("currnet map.center now that is has been changed:"+map.center)
 
     var fetchUrl =
       "https://nominatim.openstreetmap.org/reverse?format=json&lat=" +
@@ -136,15 +170,13 @@ onMounted(() => {
       })
       .then((json) => {
         var location = json.display_name;
-        map.center = center;
+        // map.center = center;
         address.value = location;
         map.center.address = location;
       });
-  });
-});
+  // });
 
-function getNeighborhoodNumbers(){
-  // neighborhood_array.slice(0, neighborhood_array.length);
+
   neighborhood_array.length = 0; // Clear the array
 
   var bounds = map.leaflet.getBounds();
@@ -292,7 +324,7 @@ function deleteIncident(caseNumber) {
           `Incident with case number ${caseNumber} deleted successfully.`
         );
         return response.json();
-      } else {
+      } else {m
         console.error("Failed to delete incident.");
         throw new Error("Failed to delete incident");
       }
@@ -310,20 +342,26 @@ function pressGo() {
   var longitude = document.getElementById("longitude").value;
   if (address.trim() !== "") {
     // see if an address was entered
+    map.center.address = address;
+    console.log(map.center.address);
     address = address.replaceAll(" ", "+"); // change spaces to pluses
     var baseUrl = "https://nominatim.openstreetmap.org/search?q=";
     var fetchUrl =
       baseUrl +
       address +
-      "+Saint+Paul+Minnesota&format=json&polygon=1&addressdetails=1";
+      // address + "&format=json&polygon=1&addressdetails=1";
 
+      "+Saint+Paul+Minnesota&format=json&polygon=1&addressdetails=1";
+    
     fetch(fetchUrl)
       .then((response) => {
         return response.json();
       })
       .then((json) => {
         var newCenter = L.latLng(json[0].lat, json[0].lon);
-        map.leaflet.setView(newCenter, 14, { animate: true }); // move the map to the new center and zoom in
+        map.center.lat = json[0].lat;
+        map.center.lng = json[0].lon;
+        map.leaflet.setView(newCenter, 17, { animate: true }); // move the map to the new center and zoom in
       });
   } else if (latitude.trim() !== "" && longitude.trim() !== "") {
     var fetchUrl =
@@ -337,6 +375,7 @@ function pressGo() {
       })
       .then((json) => {
         var location = json.display_name;
+
         //should we update the address box with this display name?
         map.leaflet.setView([latitude, longitude], 14, { animate: true }); // move the map to the new center and zoom in
       });
@@ -439,6 +478,9 @@ const removeMarker = (case_number) => {
 
   <div class="ui-row">
     <label>Address: </label><input id="address" type="text" />
+  </div>
+  <div class="ui-row">
+    <button class="button" type="button" @click="pressGo">Go</button>
   </div>
 
   <!-- should I add a new thing for lat/long? and then depending on what is filled in do that? what if the user types some in both? -->
