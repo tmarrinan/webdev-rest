@@ -519,22 +519,11 @@ const unselectCrime = (address, case_number) => {
     </thead>
     <tbody>
       
-      <!-- <tr
-        v-for="item in table"
-        :id="getClassForTableRow(item.incident_type.trim())"
-        v-if="neighborhood_array.includes(item.neighborhood_number)"
-      > -->
-      <tr>
-        {{ neighborhood_array }}
-        {{ neighborhood_numbers }}
-      </tr>
 
       <template v-for="item in table" :key="item.case_number">
           <template v-if="neighborhood_array.includes(item.neighborhood_number)">
        <tr :id="getClassForTableRow(item.incident_type.trim())">
-      
-        <td>{{ neighborhood_array.includes(item.neighborhood_number)}} </td>
-        <td>{{ item.case_number }}</td>
+              <td>{{ item.case_number }}</td>
         <td>{{ item.incident_type }}</td>
         <td>{{ item.incident }}</td>
         <td>{{ item.grid }}</td>
