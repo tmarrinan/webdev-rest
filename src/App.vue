@@ -85,6 +85,21 @@ onMounted(() => {
     [45.008206, -92.993787],
   ]);
 
+  let district_boundary = new L.geoJson();
+  district_boundary.addTo(map.leaflet);
+  fetch("data/StPaulDistrictCouncil.geojson")
+    .then((response) => {
+      return response.json();
+    })
+    .then((result) => {
+      result.features.forEach((value) => {
+        district_boundary.addData(value);
+      });
+    })
+    .catch((error) => {
+      console.log("Error:", error);
+    });
+
 });
 
 function updateUI(){
