@@ -273,7 +273,7 @@ function deleteIncident(caseNumber) {
           `Incident with case number ${caseNumber} deleted successfully.`
         );
         return response.json();
-      } else {m
+      } else {
         console.error("Failed to delete incident.");
         throw new Error("Failed to delete incident");
       }
@@ -292,6 +292,15 @@ function pressGoAddress() {
       console.log(map.center.address);
       address = address.replaceAll(" ", "+"); // change spaces to pluses
       var baseUrl = "https://nominatim.openstreetmap.org/search?q=";
+      var addUrl="+Saint+Paul+Minnesota&format=json&polygon=1&addressdetails=1"
+      if(address.includes("Saint Paul")) {
+        addUrl="+Minnesota&format=json&polygon=1&addressdetails=1"
+      } else if(address.includes("Minnesota")||address.includes("MN")) {
+        addUrl="+Saint+Paul&format=json&polygon=1&addressdetails=1"
+      } else if((address.includes("Minnesota")||address.includes("MN"))&&address.includes("Saint Paul")) {
+        addUrl = "&format=json&polygon=1&addressdetails=1"
+      }
+      
       var fetchUrl =
         baseUrl +
         address +
@@ -414,21 +423,6 @@ const removeMarker = (case_number) => {
   }
 };
 
-function convertDateFormat(inputDate) {
-  // Split the input date using slashes
-  var dateParts = inputDate.split("/");
-
-  // Extract month, day, and year
-  var month = dateParts[0];
-  var day = dateParts[1];
-  var year = dateParts[2];
-
-  // Convert to YYYY-MM-DD format
-  var outputDate = "20" + year + "-" + month + "-" + day;
-
-  return outputDate;
-}
-
 async function filterCrimes() {
   var checkboxList = document.getElementById("checkboxList");
   var checkboxes = checkboxList.getElementsByTagName("input");
@@ -494,6 +488,53 @@ async function filterCrimes() {
     console.log(error);
   }
 }
+
+const newIncident = ref({
+    case_number: '',
+    date: '',
+    time: '',
+    code: '',
+    incident: '',
+    police_grid: '',
+    neighborhood_number: '',
+    block: ''
+  // Add other necessary fields for the new incident
+});
+
+// Method to handle submitting a new incident
+async function addNewIncident() {
+  try {
+    const response = await fetch(`${crime_url.value}/new-incident`, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(newIncident.value),
+    });
+
+    if (response.ok) {
+      console.log('New incident added successfully!');
+      // Reset the form after successful submission
+      newIncident.value = {
+        case_number: '',
+        date: '',
+        time: '',
+        code: '',
+        incident: '',
+        police_grid: '',
+        neighborhood_number: '',
+        block: ''
+        // Reset other fields here
+      };
+    } else {
+      console.error('Failed to add new incident.');
+      // Handle error or display error message to the user
+    }
+  } catch (error) {
+    console.error('Error:', error);
+    // Handle network or other errors
+  }
+}
 </script>
 <template>
   <dialog id="rest-dialog" open>
@@ -532,6 +573,50 @@ async function filterCrimes() {
 
   <div class="ui-row">
     <button class="button" type="button" @click="pressGoCoordinates">Go</button>
+  </div>
+
+  <!-- New Incident Form -->
+  <button class="button" type="button" data-toggle="new-incident-dropdown">
+    Toggle New Incident Form
+  </button>
+  <div
+    class="dropdown-pane"
+    id="new-incident-dropdown"
+    data-dropdown
+    data-auto-focus="true"
+    style="max-height: 200px; overflow-y: auto"
+  >
+  <div class="new-incident-form">
+    <h4>Add New Incident</h4>
+    <form @submit.prevent="addNewIncident">
+      <label for="caseNumber">Case Number:</label>
+      <input id="caseNumber" type="text" v-model="newIncident.case_number" required>
+
+      <label for="date">Date:</label>
+      <input id="date" type="date" v-model="newIncident.date" required>
+
+      <label for="time">Time:</label>
+      <input id="time" type="time" v-model="newIncident.time" required>
+
+      <label for="code">Code:</label>
+      <input id="code" type="text" v-model="newIncident.code" required>
+
+      <label for="incident">Incident:</label>
+      <input id="incident" type="text" v-model="newIncident.incident" required>
+
+      <label for="police_grid">Police Grid:</label>
+      <input id="police_grid" type="text" v-model="newIncident.police_grid" required>
+
+      <label for="neighborhood_number">Neighborhood Number:</label>
+      <input id="neighborhood_number" type="number" v-model="newIncident.neighborhood_number" required>
+
+      <label for="block">Block:</label>
+      <input id="block" type="text" v-model="newIncident.block" required>
+
+
+      <button class="button" type="submit">Submit</button>
+    </form>
+  </div>
   </div>
 
   <div class="legend">
