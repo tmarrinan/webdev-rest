@@ -96,7 +96,7 @@ function closeDialog() {
 
 
 <template>
-    <pageheader></pageheader>
+    <pageheader style="margin-bottom: 30px !important;"></pageheader>
     <div class="grid-x">
         <div class="cell medium-12 large-8 columns chunk">
             <dialog id="rest-dialog" open style="border-radius: 20px;">
@@ -107,13 +107,16 @@ function closeDialog() {
                 <br/>
                 <button class="button" type="button" @click="closeDialog">OK</button>
             </dialog>
-            <div class="grid-container">
+            <div class="grid-container map">
                 <div class="grid-x">
                     <div id="leafletmap" class="cell auto" style="border-radius: 20px;"></div>
                 </div>
             </div>
+            <div>
+                <pageLegend></pageLegend>
+            </div>
         </div>
-        <div class="cell large-2 columns bar">
+        <div class="cell large-3 columns bar">
             <pageSidebar></pageSidebar>
         </div>
     </div>
@@ -123,7 +126,7 @@ function closeDialog() {
 </template>
 
 
-<style>
+<style>s
 #rest-dialog {
     width: 20rem;
     margin-top: 100rem;
@@ -165,12 +168,19 @@ function closeDialog() {
 .chunk{
     padding: 20px;
     background-color: white;
-    margin: 100px;
     border-radius: 30px;
 }
 
 .bar{
     margin: 30px;
+}
+
+.map{
+    margin-bottom: 30px;
+}
+
+pageheader {
+    margin-bottom: 20px;
 }
 
 

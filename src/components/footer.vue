@@ -2,7 +2,7 @@
     <footer class="sticky-footer">
       <div class="row">
         <div class="column">
-          <p>&copy; 2023 Your Project Name</p>
+          <p>&copy; 2023 Saint Paul Crime</p>
         </div>
         <div class="column">
           <router-link to="/about">About This Project</router-link>
@@ -12,9 +12,11 @@
   </template>
   
   <script>
+
   export default {
     name: 'Footer',
   };
+  
   </script>
   
   <style scoped>
