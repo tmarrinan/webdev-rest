@@ -85,47 +85,21 @@ onMounted(() => {
     [45.008206, -92.993787],
   ]);
 
-  // write the address in that's on the center of the map when initially start the app
-  var address = document.getElementById("address");
-  var fetchUrl =
-    "https://nominatim.openstreetmap.org/reverse?format=json&lat=" +
-    map.center.lat +
-    "&lon=" +
-    map.center.lng;
-  fetch(fetchUrl)
-    .then((response) => {
-      return response.json();
-    })
-    .then((json) => {
-      var location = json.display_name;
-      address.value = location;
-      map.center.address = location;
-    });
+});
 
-  // Get boundaries for St. Paul neighborhoods
-  let district_boundary = new L.geoJson();
-  district_boundary.addTo(map.leaflet);
-  fetch("data/StPaulDistrictCouncil.geojson")
-    .then((response) => {
-      return response.json();
-    })
-    .then((result) => {
-      result.features.forEach((value) => {
-        district_boundary.addData(value);
-      });
-    })
-    .catch((error) => {
-      console.log("Error:", error);
-    });
-
-  map.leaflet.on("moveend", function () {
+function updateUI(){
+    // console.log("current map.center: "+map.center);
     var center = map.leaflet.getCenter();
+    // console.log("currnet map.getCenter(): "+center);
     var latitude = document.getElementById("latitude");
     var longitude = document.getElementById("longitude");
     var address = document.getElementById("address");
 
     latitude.value = center.lat; //update the boxes with the current center
     longitude.value = center.lng;
+    map.center.lat = center.lat;
+    map.center.lng = center.lng;
+    // console.log("currnet map.center now that is has been changed:"+map.center)
 
     var fetchUrl =
       "https://nominatim.openstreetmap.org/reverse?format=json&lat=" +
@@ -138,15 +112,11 @@ onMounted(() => {
       })
       .then((json) => {
         var location = json.display_name;
-        map.center = center;
+        // map.center = center;
         address.value = location;
         map.center.address = location;
       });
-  });
-});
 
-function getNeighborhoodNumbers() {
-  // neighborhood_array.slice(0, neighborhood_array.length);
   neighborhood_array.length = 0; // Clear the array
 
   var bounds = map.leaflet.getBounds();
@@ -267,7 +237,7 @@ function closeDialog() {
     dialog_err.value = false;
     dialog.close();
     initializeCrimes();
-    map.leaflet.on("moveend", getNeighborhoodNumbers);
+    map.leaflet.on('moveend', updateUI);
     console.log("valid");
   } else {
     dialog_err.value = true;
@@ -288,7 +258,7 @@ function deleteIncident(caseNumber) {
           `Incident with case number ${caseNumber} deleted successfully.`
         );
         return response.json();
-      } else {
+      } else {m
         console.error("Failed to delete incident.");
         throw new Error("Failed to delete incident");
       }
@@ -299,29 +269,46 @@ function deleteIncident(caseNumber) {
     });
 }
 
-function pressGo() {
-  // pull all inputs in from the boxes
-  var address = document.getElementById("address").value;
+function pressGoAddress() {
+    var address = document.getElementById("address").value;
+  if (address.trim() !== "") {
+      // see if an address was entered
+      map.center.address = address;
+      console.log(map.center.address);
+      address = address.replaceAll(" ", "+"); // change spaces to pluses
+      var baseUrl = "https://nominatim.openstreetmap.org/search?q=";
+      var fetchUrl =
+        baseUrl +
+        address +
+        // address + "&format=json&polygon=1&addressdetails=1";
+
+        "+Saint+Paul+Minnesota&format=json&polygon=1&addressdetails=1";
+      
+      fetch(fetchUrl)
+        .then((response) => {
+          return response.json();
+        })
+        .then((json) => {
+          var newCenter = L.latLng(json[0].lat, json[0].lon);
+          map.center.lat = json[0].lat;
+          map.center.lng = json[0].lon;
+          map.leaflet.setView(newCenter, 17, { animate: true }); // move the map to the new center and zoom in
+        });
+      }
+}
+
+function pressGoCoordinates() {
   var latitude = document.getElementById("latitude").value;
   var longitude = document.getElementById("longitude").value;
-  if (address.trim() !== "") {
-    // see if an address was entered
-    address = address.replaceAll(" ", "+"); // change spaces to pluses
-    var baseUrl = "https://nominatim.openstreetmap.org/search?q=";
-    var fetchUrl =
-      baseUrl +
-      address +
-      "+Saint+Paul+Minnesota&format=json&polygon=1&addressdetails=1";
+  if ((longitude < -93.217977) || (longitude > -92.993787)) {
+    console.log("coordinates are out of bounds of this area");
+    return;
+  } else if ((latitude < 44.883658) || (latitude > 45.008206)) {
+    console.log("coordinates are out of bounds of this area");
+    return;
+  }
 
-    fetch(fetchUrl)
-      .then((response) => {
-        return response.json();
-      })
-      .then((json) => {
-        var newCenter = L.latLng(json[0].lat, json[0].lon);
-        map.leaflet.setView(newCenter, 14, { animate: true }); // move the map to the new center and zoom in
-      });
-  } else if (latitude.trim() !== "" && longitude.trim() !== "") {
+  if (latitude.trim() !== "" && longitude.trim() !== "") {
     var fetchUrl =
       "https://nominatim.openstreetmap.org/reverse?format=json&lat=" +
       latitude +
@@ -332,8 +319,6 @@ function pressGo() {
         return response.json();
       })
       .then((json) => {
-        var location = json.display_name;
-        //should we update the address box with this display name?
         map.leaflet.setView([latitude, longitude], 14, { animate: true }); // move the map to the new center and zoom in
       });
   }
@@ -519,8 +504,10 @@ async function filterCrimes() {
   <div class="ui-row">
     <label>Address: </label><input id="address" type="text" />
   </div>
+  <div class="ui-row">
+    <button class="button" type="button" @click="pressGoAddress">Go</button>
+  </div>
 
-  <!-- should I add a new thing for lat/long? and then depending on what is filled in do that? what if the user types some in both? -->
   <div class="ui-row">
     <label>Latitude: </label><input id="latitude" type="text" />
   </div>
@@ -529,7 +516,7 @@ async function filterCrimes() {
   </div>
 
   <div class="ui-row">
-    <button class="button" type="button" @click="pressGo">Go</button>
+    <button class="button" type="button" @click="pressGoCoordinates">Go</button>
   </div>
 
   <div class="legend">
