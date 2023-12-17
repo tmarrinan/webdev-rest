@@ -186,16 +186,16 @@ app.get('/incidents', (req, res) => {
     }
 
     if (req.query.hasOwnProperty("code")) {
-        sql += statm1 + " code=?";
+        sql += statm1 + " (code=?";
         let code_list = req.query["code"].split(",");
         code_list.forEach(code => {
             code = code.trim()
             params.push(parseInt(code));
         });
         for(let i=0; i<code_list.length-1; i++) {
-            sql += " OR code=?"
+            sql += "OR code=?"
         }
-        // sql+="ORDER BY code"
+        sql += ")"
         statm1 = " AND";
     }
 
@@ -276,7 +276,6 @@ app.put('/new-incident', (req, res) => {
     params.push(req.body.police_grid);
     params.push(req.body.neighborhood_number);
     params.push(req.body.block);
-    console.log(params);
 
     console.log(req.body.case_number);
     dbSelect('SELECT * FROM Incidents WHERE case_number = ?', [req.body.case_number])

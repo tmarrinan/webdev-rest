@@ -2,12 +2,15 @@
 import { reactive, ref, onMounted, initCustomFormatter } from "vue";
 import ToggleCrimeButton from "./selectButton.vue";
 
-
 let crime_url = ref("");
 let table = reactive([]);
 let dialog_err = ref(false);
-let neighborhood_array = reactive([0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16]);
-let code_incident_map = reactive[{}]
+let neighborhood_array = reactive([
+  0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16,
+]);
+let code_map = reactive({});
+let neighborhood_map = {};
+let crimes_num_table = {};
 let map = reactive({
   leaflet: null,
   center: {
@@ -114,7 +117,6 @@ onMounted(() => {
     .catch((error) => {
       console.log("Error:", error);
     });
-    
 
   map.leaflet.on("moveend", function () {
     var center = map.leaflet.getCenter();
@@ -143,7 +145,7 @@ onMounted(() => {
   });
 });
 
-function getNeighborhoodNumbers(){
+function getNeighborhoodNumbers() {
   // neighborhood_array.slice(0, neighborhood_array.length);
   neighborhood_array.length = 0; // Clear the array
 
@@ -154,16 +156,15 @@ function getNeighborhoodNumbers(){
   var se_lat = se_bounds.lat;
   var nw_lng = nw_bounds.lng;
   var se_lng = se_bounds.lng;
-  map.neighborhood_markers.forEach(function(markerData, index) {
+  map.neighborhood_markers.forEach(function (markerData, index) {
     var lat = markerData.location[0];
     var lng = markerData.location[1];
-    if ((lat < nw_lat) && (lat > se_lat) && ((lng > nw_lng) && (lng < se_lng))) {
-        neighborhood_array.push(index);
+    if (lat < nw_lat && lat > se_lat && lng > nw_lng && lng < se_lng) {
+      neighborhood_array.push(index);
     }
   });
   return neighborhood_array;
 }
-
 
 function replaceIncompleteAddress(address) {
   const addressParts = address.split(" ");
@@ -190,26 +191,23 @@ function replaceIncompleteAddress(address) {
 
 // FUNCTIONS
 // Function called once user has entered REST API URL
+
+// Function to handle fetch and return a promise
+function fetchData(url) {
+  return fetch(crime_url.value + url)
+    .then((response) => response.json())
+    .catch((error) => {
+      console.log("error");
+      console.log(error);
+    });
+}
+
 function initializeCrimes() {
-  let code_map = {};
-  let neighborhood_map = {};
-  let crimes_num_table = {}; 
-
-  // Function to handle fetch and return a promise
-  function fetchData(url) {
-    return fetch(crime_url.value + url)
-      .then((response) => response.json())
-      .catch((error) => {
-        console.log("error");
-        console.log(error);
-      });
-  }
-
   // Use Promise.all to execute all fetch requests concurrently
   Promise.all([
     fetchData("/codes"),
     fetchData("/neighborhoods"),
-    fetchData("/incidents")
+    fetchData("/incidents"),
   ])
     .then(([codes, neighborhoods, incidents]) => {
       // Process codes
@@ -226,6 +224,7 @@ function initializeCrimes() {
       // Process incidents
       incidents.forEach((crime) => {
         table.push({
+          code: crime.code,
           case_number: crime.case_number,
           incident_type: code_map[crime.code],
           incident: crime.incident,
@@ -236,8 +235,6 @@ function initializeCrimes() {
           time: crime.time,
           neighborhood_number: crime.neighborhood_number,
         });
-
-        
 
         Object.keys(crimes_num_table).forEach((neigh) => {
           if (neighborhood_map[crime.neighborhood_number] == neigh) {
@@ -255,7 +252,6 @@ function initializeCrimes() {
           )
           .openPopup();
       });
-      
     })
     .catch((error) => {
       console.log("error");
@@ -271,7 +267,7 @@ function closeDialog() {
     dialog_err.value = false;
     dialog.close();
     initializeCrimes();
-    map.leaflet.on('moveend', getNeighborhoodNumbers);
+    map.leaflet.on("moveend", getNeighborhoodNumbers);
     console.log("valid");
   } else {
     dialog_err.value = true;
@@ -378,14 +374,16 @@ const selectCrime = (address, date, time, incident, case_number) => {
       const marker = L.marker(markerLocation, { icon: redIcon })
         .addTo(map.leaflet)
         .bindPopup(popupContent)
-        .on('popupopen', function () {
+        .on("popupopen", function () {
           // Attach event listener to the button after the popup is open
-          document.getElementById('removeButton').addEventListener('click', function () {
-            // Remove the marker when the button is clicked
-            removeMarker(case_number);
-          });
+          document
+            .getElementById("removeButton")
+            .addEventListener("click", function () {
+              // Remove the marker when the button is clicked
+              removeMarker(case_number);
+            });
         });
-      
+
       marker.openPopup();
 
       map.crime_markers.push({
@@ -399,9 +397,10 @@ const selectCrime = (address, date, time, incident, case_number) => {
     });
 };
 
-
 const removeMarker = (case_number) => {
-  let indexToRemove = map.crime_markers.findIndex((item) => item.case_number === case_number);
+  let indexToRemove = map.crime_markers.findIndex(
+    (item) => item.case_number === case_number
+  );
 
   if (indexToRemove !== -1) {
     let markerToRemove = map.crime_markers[indexToRemove].marker;
@@ -415,6 +414,86 @@ const removeMarker = (case_number) => {
   }
 };
 
+function convertDateFormat(inputDate) {
+  // Split the input date using slashes
+  var dateParts = inputDate.split("/");
+
+  // Extract month, day, and year
+  var month = dateParts[0];
+  var day = dateParts[1];
+  var year = dateParts[2];
+
+  // Convert to YYYY-MM-DD format
+  var outputDate = "20" + year + "-" + month + "-" + day;
+
+  return outputDate;
+}
+
+async function filterCrimes() {
+  var checkboxList = document.getElementById("checkboxList");
+  var checkboxes = checkboxList.getElementsByTagName("input");
+  var start_date = document.getElementById("start_date");
+  var end_date = document.getElementById("end_date");
+  var max_incidents = document.getElementById("max-incidents");
+  let code_array = [];
+  let final_url = "/incidents?";
+
+  function getKeyByValue(object, value) {
+    return Object.keys(object).find((key) => object[key] === value);
+  }
+
+  for (var i = 0; i < checkboxes.length; i++) {
+    if (checkboxes[i].checked) {
+      code_array.push(
+        getKeyByValue(code_map, checkboxes[i].parentElement.innerText.trim())
+      );
+    }
+  }
+
+  if (code_array.length !== 0) {
+    final_url += "code=";
+    final_url += code_array.join(',');
+}
+
+
+  if (start_date.value != "") {
+    final_url += `&start_date=${start_date.value}`;
+  }
+
+  if (end_date.value != "") {
+    final_url += `&end_date=${end_date.value}`;
+  }
+
+  if (max_incidents.value != "0") {
+    final_url += `&limit=${max_incidents.value}`;
+  }
+
+  console.log(final_url);
+  try {
+    table.length = 0;
+    const incidents = await fetchData(final_url);
+
+    incidents.forEach((incident) => {
+      table.push({
+        case_number: incident.case_number,
+        incident_type: code_map[incident.code],
+        incident: incident.incident,
+        grid: incident.police_grid,
+        neighborhood: neighborhood_map[incident.neighborhood_number],
+        block: replaceIncompleteAddress(incident.block),
+        date: incident.date,
+        time: incident.time,
+        neighborhood_number: incident.neighborhood_number,
+      });
+    });
+
+    // Now that the fetch operation is complete, you can update the table
+    console.log(table);
+  } catch (error) {
+    console.log("error");
+    console.log(error);
+  }
+}
 </script>
 <template>
   <dialog id="rest-dialog" open>
@@ -459,23 +538,53 @@ const removeMarker = (case_number) => {
     <span class="legend-item other-crime">Other Crime</span>
   </div>
 
-  <div id="checkboxList">
-    <label><input type="checkbox"> Narcotics</label>
-    <label><input type="checkbox"> Proactive Police Visit</label>
-    <label><input type="checkbox"> Discharge </label>
-    <label><input type="checkbox"> Theft</label>
-    <label><input type="checkbox"> Robbery </label>
-    <label><input type="checkbox"> Community Event</label>
-    <label><input type="checkbox"> Auto Theft</label>
-    <label><input type="checkbox"> Criminal Damage</label>
-    <label><input type="checkbox"> Burglary</label>
-    <label><input type="checkbox"> Simple Assault Dom</label>
-    <label><input type="checkbox"> Agg. Assault Dom</label>  
-    <label><input type="checkbox"> Agg. Assault</label>
+  <button class="button" type="button" data-toggle="example-dropdown">
+    Toggle Dropdown Filters
+  </button>
+  <div
+    class="dropdown-pane"
+    id="example-dropdown"
+    data-dropdown
+    data-auto-focus="true"
+    style="max-height: 200px; overflow-y: auto"
+  >
+    <div
+      id="checkboxList"
+      class="dropdown-panel"
+      v-if="Object.keys(code_map).length > 0"
+    >
+      <label>Start Date</label>
+      <input id="start_date" type="date" />
+      <label>End Date</label>
+      <input id="end_date" type="date" />
+      <label>Max Cases (up to 1000)</label>
+      <input
+        id="max-incidents"
+        type="range"
+        min="0"
+        max="1000"
+        value="0"
+        oninput="this.nextElementSibling.value = this.value"
+      />
+      <output>1000</output>
+      <br />
+      <label v-for="item in code_map"
+        ><input type="checkbox" /> {{ item }}</label
+      >
+    </div>
   </div>
+  
+  <button
+    id="filter"
+    class="button success"
+    type="button"
+    @click="filterCrimes()"
+    
+  >
+    Filter
+  </button>
 
-
-  <table class = "unstriped" v-if="table.length > 0">
+  <table class="unstriped" v-if="table.length > 0">
     <thead>
       <tr>
         <th>case_number</th>
@@ -490,42 +599,44 @@ const removeMarker = (case_number) => {
         <th>delete incident</th>
       </tr>
     </thead>
-    <tbody>      
-
+    <tbody>
       <template v-for="item in table" :key="item.case_number">
-          <template v-if="neighborhood_array.includes(item.neighborhood_number)">
-       <tr class="unstriped" :id="getClassForTableRow(item.incident_type.trim())">
-              <td>{{ item.case_number }}</td>
-
-        <td>{{ item.incident_type }}</td>
-        <td>{{ item.incident }}</td>
-        <td>{{ item.grid }}</td>
-        <td>{{ item.neighborhood }}</td>
-        <td>{{ item.block }}</td>
-        <td>{{ item.date }}</td>
-        <td>{{ item.time }}</td>
-        <td>
-          <ToggleCrimeButton
-            :address="item.block"
-            :date="item.date"
-            :time="item.time"
-            :incident="item.incident"
-            :case_number="item.case_number"
-            :onSelect="selectCrime"
-            :onUnselect="removeMarker"
-          ></ToggleCrimeButton>
-        </td>
-        <td>
-          <button
-            class="button"
-            type="button"
-            @click="deleteIncident(item.case_number)"
+        <template v-if="neighborhood_array.includes(item.neighborhood_number)">
+          <tr
+            class="unstriped"
+            :id="getClassForTableRow(item.incident_type.trim())"
           >
-            Delete
-          </button>
-        </td>
-      </tr>
-      </template>
+            <td>{{ item.case_number }}</td>
+
+            <td>{{ item.incident_type }}</td>
+            <td>{{ item.incident }}</td>
+            <td>{{ item.grid }}</td>
+            <td>{{ item.neighborhood }}</td>
+            <td>{{ item.block }}</td>
+            <td>{{ item.date }}</td>
+            <td>{{ item.time }}</td>
+            <td>
+              <ToggleCrimeButton
+                :address="item.block"
+                :date="item.date"
+                :time="item.time"
+                :incident="item.incident"
+                :case_number="item.case_number"
+                :onSelect="selectCrime"
+                :onUnselect="removeMarker"
+              ></ToggleCrimeButton>
+            </td>
+            <td>
+              <button
+                class="button"
+                type="button"
+                @click="deleteIncident(item.case_number)"
+              >
+                Delete
+              </button>
+            </td>
+          </tr>
+        </template>
       </template>
     </tbody>
   </table>
@@ -598,11 +709,11 @@ const removeMarker = (case_number) => {
 }
 
 #highlight-orange {
-  background-color: #FFA500;
+  background-color: #ffa500;
 }
 
 #highlight-yellow {
-  background-color: lightgray
+  background-color: lightgray;
 }
 
 .legend {
@@ -610,14 +721,20 @@ const removeMarker = (case_number) => {
 }
 
 .legend-item {
-  margin-right: 1% ;
+  margin-right: 1%;
   padding: 0.5%;
   border: 1px black;
 }
 
-.violent-crime { background-color: #FF4D4D; }
-.property-crime { background-color: #FFA500; }
-.other-crime { background-color: lightgray;}
+.violent-crime {
+  background-color: #ff4d4d;
+}
+.property-crime {
+  background-color: #ffa500;
+}
+.other-crime {
+  background-color: lightgray;
+}
 
 .ui-row {
   display: inline-block;
@@ -625,7 +742,11 @@ const removeMarker = (case_number) => {
 }
 
 #checkboxList label {
-      display: inline-block;
-      margin-right: 10px; 
-    }
+  display: inline-block;
+  margin-right: 10px;
+}
+
+#filter {
+  margin-left: 10px;
+}
 </style>
