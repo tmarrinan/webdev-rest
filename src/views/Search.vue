@@ -117,6 +117,8 @@ onMounted(() => {
             console.log('Error:', error);
     });
     
+    map.leaflet.on('moveend', handleMapMove);
+    map.leaflet.on('zoomend', handleMapZoom);
 });
 
 // Fetches data from crime API and populates respective data models
@@ -249,6 +251,20 @@ function within(target, array){
     return false;
 }
 
+function handleMapMove() {
+  // Handle map panning
+  map.bounds.nw = map.leaflet.getBounds().getNorthWest();
+  map.bounds.se = map.leaflet.getBounds().getSouthEast();
+  map.center = map.leaflet.getCenter();
+};
+
+function handleMapZoom() {
+  // Handle map zooming
+  map.bounds.nw = map.leaflet.getBounds().getNorthWest();
+  map.bounds.se = map.leaflet.getBounds().getSouthEast();
+  map.center = map.leaflet.getCenter();
+};
+
 </script>
 
 <template>
@@ -330,7 +346,7 @@ function within(target, array){
         </div>
     </div>
     <div class="grid-container">
-        <IncidentTable id="table" :crimes="crimes" :codes="codes" :neighborhoods="neighborhoods"></IncidentTable>
+        <IncidentTable id="table" :crimes="crimes" :codes="codes" :neighborhoods="neighborhoods" :map="map"></IncidentTable>
     </div>
 </template>
 

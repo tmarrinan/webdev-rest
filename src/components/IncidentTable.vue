@@ -1,7 +1,7 @@
 <script setup>
 
 import IncidentRow from './IncidentRow.vue';
-defineProps(['crimes', 'codes', 'neighborhoods']);
+defineProps(['crimes', 'codes', 'neighborhoods', 'map']);
 
 </script>
 
