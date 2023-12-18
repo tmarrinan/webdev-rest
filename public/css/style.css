@@ -19,3 +19,20 @@ body{
     height: 200px;
     padding: 40px;
 }
+
+
+.about{
+    margin-bottom: 30px;
+    background-color: white;
+    padding: 20px;
+    text-align: center;
+    border-bottom: 1px solid #ccc; /* Optional: Add a border at the bottom for separation */
+}
+
+.block{
+    border-radius: 20px;
+    background-color: white;
+    padding: 15px;
+}
+
+

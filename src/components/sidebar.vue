@@ -70,7 +70,13 @@
     
         <!-- Submit button -->
         <div class="select">
+            <a class="button" style="width: 100%">Apply Filters</a>
+        </div>
+        <div class="select">
             <a class="button" style="width: 100%">Submit New Incident</a>
+        </div>
+        <div class="select">
+            <a class="button" style="width: 100%">Delete Incident</a>
         </div>
     </div>
   </template>
@@ -105,6 +111,19 @@
     padding: 0.5rem;
     border: 1px solid #ccc;
     border-radius: 5px;
+  }
+
+  .button{
+    background-color: rgb(221, 237, 237);
+    border-radius: 10px;
+    color: black;
+    border-width: 2px;
+    border-color: none;
+  }
+
+  .button:hover{
+    border-width: 2px;
+    border-color: black;
   }
   </style>
   

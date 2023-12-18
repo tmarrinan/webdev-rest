@@ -5,7 +5,7 @@
           <p>&copy; 2023 Saint Paul Crime</p>
         </div>
         <div class="column">
-          <router-link to="/about">About This Project</router-link>
+          <a href="/src/about.html">About this Project</a>
         </div>
       </div>
     </footer>

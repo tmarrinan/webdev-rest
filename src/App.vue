@@ -1,13 +1,22 @@
 <script setup>
-import { reactive, ref, onMounted } from 'vue'
+import { reactive, ref, onMounted } from 'vue';
 import pageSidebar from "./components/sidebar.vue"
 import pageLegend from "./components/legend.vue"
 import pageheader from "./components/header.vue"
 import pageFooter from "./components/footer.vue"
 
 
+
+
 let crime_url = ref('');
 let dialog_err = ref(false);
+
+let crimeData = ref({
+  codes: [],
+  neighborhoods: [],
+  incidents: []
+});
+
 let map = reactive(
     {
         leaflet: null,
@@ -72,20 +81,53 @@ onMounted(() => {
 });
 
 
+
 // FUNCTIONS
 // Function called once user has entered REST API URL
 function initializeCrimes() {
-    // TODO: get code and neighborhood data
-    //       get initial 1000 crimes
+
+  fetch(crime_url.value + '/codes')
+    .then(response => response.json())
+    .then(data => {
+      console.log('Route 1');
+      console.log(data);
+      crimeData.value.codes = data;
+      console.log(crimeData.value.codes);
+
+    })
+    .catch(error => {
+      console.error('Error fetching codes:', error);
+    });
+
+  fetch(crime_url.value + '/neighborhoods')
+    .then(response => response.json())
+    .then(data => {
+      console.log('Route 2');
+      console.log(data);
+      crimeData.value.neighborhoods = data;
+    })
+    .catch(error => {
+      console.error('Error fetching neighborhoods:', error);
+    });
+
+  fetch(crime_url.value + '/incidents')
+    .then(response => response.json())
+    .then(data => {
+      console.log('Route 3');
+      console.log(data);
+      crimeData.value.incidents = data;
+    })
+    .catch(error => {
+      console.error('Error fetching incidents:', error);
+    });
 }
+
 
 // Function called when user presses 'OK' on dialog box
 function closeDialog() {
-    let dialog = document.getElementById('rest-dialog');
     let url_input = document.getElementById('dialog-url');
     if (crime_url.value !== '' && url_input.checkValidity()) {
         dialog_err.value = false;
-        dialog.close();
         initializeCrimes();
     }
     else {
@@ -97,16 +139,8 @@ function closeDialog() {
 
 <template>
     <pageheader style="margin-bottom: 30px !important;"></pageheader>
-    <div class="grid-x">
+    <div class="grid-x" style="padding-bottom: 20px;">
         <div class="cell medium-12 large-8 columns chunk">
-            <dialog id="rest-dialog" open style="border-radius: 20px;">
-                <h1 class="dialog-header">St. Paul Crime REST API</h1>
-                <label class="dialog-label">URL: </label>
-                <input id="dialog-url" class="dialog-input" type="url" v-model="crime_url" placeholder="http://localhost:8000" />
-                <p class="dialog-error" v-if="dialog_err">Error: must enter valid URL</p>
-                <br/>
-                <button class="button" type="button" @click="closeDialog">OK</button>
-            </dialog>
             <div class="grid-container map">
                 <div class="grid-x">
                     <div id="leafletmap" class="cell auto" style="border-radius: 20px;"></div>
@@ -117,11 +151,20 @@ function closeDialog() {
             </div>
         </div>
         <div class="cell large-3 columns bar">
+            <div style="padding-bottom: 15px;">
+                <div class="test">
+                    <label>URL: </label>
+                    <div style="padding-bottom: 5px;">
+                        <input id="dialog-url" class="dialog-input" type="url" v-model="crime_url" placeholder="http://localhost:8000" />
+                        <p class="dialog-error" v-if="dialog_err">Error: must enter valid URL</p>
+                    </div>
+                    <button class="button" type="button" @click="closeDialog">OK</button>
+                </div>
+            </div>
             <pageSidebar></pageSidebar>
         </div>
     </div>
     <pageFooter></pageFooter>
-    
  
 </template>
 
@@ -181,6 +224,32 @@ function closeDialog() {
 
 pageheader {
     margin-bottom: 20px;
+}
+
+.test{
+    background-color: white;
+    border-radius: 20px;
+    padding: 20px;
+    margin-bottom: 30px;
+}
+
+.button{
+    margin-top: 30px;
+    font-weight: bold;
+    width: 100%;
+    background-color: rgb(221, 237, 237);
+    border-radius: 10px;
+    color: black;
+    border-width: 2px;
+    border-color: none;
+}
+
+.button:hover{
+    font-weight: bold;
+    color: black;
+    background-color: rgb(221, 237, 237);
+    border-width: 2px;
+    border-color: black;
 }
 
 

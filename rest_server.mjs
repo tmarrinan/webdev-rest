@@ -2,6 +2,7 @@
 
 import * as path from 'node:path';
 import * as url from 'node:url';
+import cors from 'cors';
 
 import { default as express, json } from 'express';
 import { default as sqlite3 } from 'sqlite3';
@@ -9,10 +10,11 @@ import { default as sqlite3 } from 'sqlite3';
 const __dirname = path.dirname(url.fileURLToPath(import.meta.url));
 const db_filename = path.join(__dirname, 'db', 'stpaul_crime.sqlite3');
 
-const port = 8000;
+const port = 8001;
 
 let app = express();
 app.use(express.json());
+app.use(cors());
 
 /********************************************************************
  ***   DATABASE FUNCTIONS                                         ***
@@ -98,7 +100,7 @@ app.get('/neighborhoods', (req, res) => {
 
     let idSelections = req.query;
     let query = 'Select * FROM Neighborhoods';
-    let params = [String];
+    let params = [];
 
     if (req.query.hasOwnProperty('neighborhood_number')) {
         idSelections = req.query.neighborhood_number.replace(/,/g, ' OR neighborhood_number = ');
