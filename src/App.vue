@@ -4,6 +4,7 @@ import pageSidebar from "./components/sidebar.vue"
 import pageLegend from "./components/legend.vue"
 import pageheader from "./components/header.vue"
 import pageFooter from "./components/footer.vue"
+import pageTable from "./components/table.vue"
 
 
 
@@ -86,36 +87,31 @@ onMounted(() => {
 // Function called once user has entered REST API URL
 function initializeCrimes() {
 
-  fetch(crime_url.value + '/codes')
+    fetch(crime_url.value + '/codes')
     .then(response => response.json())
     .then(data => {
-      console.log('Route 1');
-      console.log(data);
       crimeData.value.codes = data;
       console.log(crimeData.value.codes);
-
     })
     .catch(error => {
       console.error('Error fetching codes:', error);
     });
 
-  fetch(crime_url.value + '/neighborhoods')
+    fetch(crime_url.value + '/neighborhoods')
     .then(response => response.json())
     .then(data => {
-      console.log('Route 2');
-      console.log(data);
       crimeData.value.neighborhoods = data;
+      console.log(crimeData.value.neighborhoods);
     })
     .catch(error => {
       console.error('Error fetching neighborhoods:', error);
     });
 
-  fetch(crime_url.value + '/incidents')
+    fetch(crime_url.value + '/incidents')
     .then(response => response.json())
     .then(data => {
-      console.log('Route 3');
-      console.log(data);
       crimeData.value.incidents = data;
+      console.log(crimeData.value.incidents);
     })
     .catch(error => {
       console.error('Error fetching incidents:', error);
