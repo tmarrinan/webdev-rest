@@ -86,20 +86,33 @@ onMounted(() => {
 // FUNCTIONS
 // Function called once user has entered REST API URL
 function initializeCrimes() {
-    try {
-    const [codes, neighborhoods, incidents] = Promise.all([
-      fetch(crime_url.value + '/codes').then(response => response.json()),
-      fetch(crime_url.value + '/neighborhoods').then(response => response.json()),
-      fetch(crime_url.value + '/incidents').then(response => response.json())
-    ]);
 
-    // Check if the response is an array before assigning to crimeData
-    crimeData.value.codes = Array.isArray(codes) ? codes : [];
-    crimeData.value.neighborhoods = Array.isArray(neighborhoods) ? neighborhoods : [];
-    crimeData.value.incidents = Array.isArray(incidents) ? incidents : [];
-  } catch (error) {
-    console.error('Error fetching data:', error);
-  }
+    fetch(crime_url.value + '/codes')
+    .then(response => response.json())
+    .then(data => {
+      crimeData.value.codes = data;
+    })
+    .catch(error => {
+      console.error('Error fetching codes:', error);
+    });
+
+    fetch(crime_url.value + '/neighborhoods')
+    .then(response => response.json())
+    .then(data => {
+      crimeData.value.neighborhoods = data;
+    })
+    .catch(error => {
+      console.error('Error fetching neighborhoods:', error);
+    });
+
+    fetch(crime_url.value + '/incidents')
+    .then(response => response.json())
+    .then(data => {
+      crimeData.value.incidents = data;
+    })
+    .catch(error => {
+      console.error('Error fetching incidents:', error);
+    });
 }
 
 
@@ -109,11 +122,13 @@ function closeDialog() {
     if (crime_url.value !== '' && url_input.checkValidity()) {
         dialog_err.value = false;
         initializeCrimes();
+        sendConsole();
     }
     else {
         dialog_err.value = true;
     }
 }
+
 
 </script>
 
@@ -129,7 +144,6 @@ function closeDialog() {
             </div>
             <div>
                 <pageLegend></pageLegend>
-                
             </div>
         </div>
         <div class="cell large-3 columns bar">
