@@ -86,36 +86,20 @@ onMounted(() => {
 // FUNCTIONS
 // Function called once user has entered REST API URL
 function initializeCrimes() {
+    try {
+    const [codes, neighborhoods, incidents] = Promise.all([
+      fetch(crime_url.value + '/codes').then(response => response.json()),
+      fetch(crime_url.value + '/neighborhoods').then(response => response.json()),
+      fetch(crime_url.value + '/incidents').then(response => response.json())
+    ]);
 
-    fetch(crime_url.value + '/codes')
-    .then(response => response.json())
-    .then(data => {
-      crimeData.value.codes = data;
-      console.log(crimeData.value.codes);
-    })
-    .catch(error => {
-      console.error('Error fetching codes:', error);
-    });
-
-    fetch(crime_url.value + '/neighborhoods')
-    .then(response => response.json())
-    .then(data => {
-      crimeData.value.neighborhoods = data;
-      console.log(crimeData.value.neighborhoods);
-    })
-    .catch(error => {
-      console.error('Error fetching neighborhoods:', error);
-    });
-
-    fetch(crime_url.value + '/incidents')
-    .then(response => response.json())
-    .then(data => {
-      crimeData.value.incidents = data;
-      console.log(crimeData.value.incidents);
-    })
-    .catch(error => {
-      console.error('Error fetching incidents:', error);
-    });
+    // Check if the response is an array before assigning to crimeData
+    crimeData.value.codes = Array.isArray(codes) ? codes : [];
+    crimeData.value.neighborhoods = Array.isArray(neighborhoods) ? neighborhoods : [];
+    crimeData.value.incidents = Array.isArray(incidents) ? incidents : [];
+  } catch (error) {
+    console.error('Error fetching data:', error);
+  }
 }
 
 
@@ -130,6 +114,7 @@ function closeDialog() {
         dialog_err.value = true;
     }
 }
+
 </script>
 
 
@@ -144,6 +129,7 @@ function closeDialog() {
             </div>
             <div>
                 <pageLegend></pageLegend>
+                
             </div>
         </div>
         <div class="cell large-3 columns bar">

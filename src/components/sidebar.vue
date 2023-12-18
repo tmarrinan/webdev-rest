@@ -1,5 +1,9 @@
 <template>
     <div style="justify-content: space-evenly;">
+        <div class="select">
+          <input class="search" placeholder="Neighborhood Name"/>
+          <button class="searchButton" type="button">OK</button>
+        </div>
         <!-- Dropdown with 12 options -->
         <div class="select">
             <select>
@@ -124,6 +128,26 @@
   .button:hover{
     border-width: 2px;
     border-color: black;
+  }
+
+  .searchButton{
+    background-color: rgb(221, 237, 237);
+    border-radius: 10px;
+    color: black;
+    border-width: 2px;
+    border-color: none;
+  }
+
+  .searchButton:hover{
+    background-color: rgb(221, 237, 237);
+    border-radius: 10px;
+    color: black;
+    border-width: 2px;
+    border-color: none;
+  }
+
+  .search{
+    width: 80%
   }
   </style>
   

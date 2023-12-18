@@ -56,8 +56,6 @@ function getNeighborhood(n_id){
     }
 }
 
-
-
 function codeName(c_id){
     let num = c_id / 100;
     let val = "red";
@@ -71,5 +69,7 @@ function codeName(c_id){
         val = "rgb(104, 252, 161)";
     }
 }
+
+
 
 </script>
