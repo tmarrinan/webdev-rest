@@ -10,6 +10,7 @@ let location = ref('');
 let crimes = ref([]);
 let codes = ref([]);
 let neighborhoods = ref([]);
+let visibleCrimes = ref([]);
 let codeCategories = reactive([
     {name:'Murder', value:'100-200'},
     {name:'Rape', value:'200-300'},
@@ -117,6 +118,8 @@ onMounted(() => {
             console.log('Error:', error);
     });
     
+    map.leaflet.on('moveend', handleMapMove);
+    map.leaflet.on('zoomend', handleMapZoom);
 });
 
 // Fetches data from crime API and populates respective data models
@@ -249,6 +252,48 @@ function within(target, array){
     return false;
 }
 
+function handleMapMove() {
+  map.bounds.nw = map.leaflet.getBounds().getNorthWest();
+  map.bounds.se = map.leaflet.getBounds().getSouthEast();
+  map.center = map.leaflet.getCenter();
+  updateVisibleCrimes();
+};
+
+function handleMapZoom() {
+  map.bounds.nw = map.leaflet.getBounds().getNorthWest();
+  map.bounds.se = map.leaflet.getBounds().getSouthEast();
+  map.center = map.leaflet.getCenter();
+  updateVisibleCrimes();
+};
+
+async function updateVisibleCrimes() {
+    const bounds = map.leaflet.getBounds();
+    //const nw = bounds.getNorthWest();
+    //const se = bounds.getSouthEast();
+
+    const visible = crimes.value.filter(crime => {
+        const neighborhoodId = crime.neighborhood_number;
+
+        // Find the corresponding marker for the neighborhood
+        const neighborhoodMarker = map.neighborhood_markers.find(marker => marker.number === neighborhoodId);
+
+        // Check if the marker is within the map bounds
+        if (neighborhoodMarker) {
+            const markerLatLng = L.latLng(neighborhoodMarker.location);
+            return bounds.contains(markerLatLng);
+        }
+
+        return false;
+    });
+    if (visible.length > 0) {
+        test.value = true;
+    }
+    console.log("visibleCrimes count: ", visible.length);
+    // Update crimes with visible crimes
+    visibleCrimes.value = visible;
+}
+
+
 </script>
 
 <template>
@@ -330,7 +375,8 @@ function within(target, array){
         </div>
     </div>
     <div class="grid-container">
-        <IncidentTable id="table" :crimes="crimes" :codes="codes" :neighborhoods="neighborhoods"></IncidentTable>
+        <IncidentTable v-if="visibleCrimes.length > 0" id="table" :crimes="visibleCrimes" :codes="codes" :neighborhoods="neighborhoods" :map="map"></IncidentTable>
+        <IncidentTable v-else id="table" :crimes="crimes" :codes="codes" :neighborhoods="neighborhoods" :map="map"></IncidentTable>
     </div>
 </template>
 
