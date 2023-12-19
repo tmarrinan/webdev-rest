@@ -5,6 +5,7 @@ import IncidentTable from '../components/IncidentTable.vue';
 let base_url = ref('http://localhost:8001');
 let dialog_err = ref(false);
 let location = ref('');
+let markers = ref([]);
 
 // data models
 let crimes = ref([]);
@@ -104,15 +105,7 @@ onMounted(() => {
     // Draw markers once data is fetched
     initializeCrimes()
     .then(() => {
-        map.neighborhood_markers.forEach((marker) => {
-            let marker_name = getNeighborhoodNameById(marker.number, neighborhoods.value);
-            let marker_crimes = calculateCrimes(marker_name, crimes.value, neighborhoods.value);
-            L.marker(marker.location).addTo(map.leaflet).bindPopup(
-                `${marker_name}` +
-                ': ' +
-                `${marker_crimes}`
-        );
-    });
+        drawMarkers();
     })
     .catch(error => {
             console.log('Error:', error);
@@ -150,6 +143,7 @@ async function updateCrimes(params) {
     .then(updated_data => {
         crimes.value = updated_data;
         updateVisibleCrimes();
+        drawMarkers();
     })
     .catch(error => {
         console.log('Error:', error);
@@ -213,6 +207,33 @@ function buildParamString(params, code_params, neighborhood_params) {
 
 async function fetchJson(url) {
     return fetch(url).then(response => response.json());
+}
+
+function drawMarkers() {
+    // remove markers currently on map
+    if (markers.value.length > 0) {
+        markers.value.forEach((marker) => {
+            map.leaflet.removeLayer(marker);
+        })
+        markers.value = [];
+    }
+    
+    map.neighborhood_markers.forEach((marker) => {
+        let marker_name = getNeighborhoodNameById(marker.number, neighborhoods.value);
+        let marker_crimes = calculateCrimes(marker_name, crimes.value, neighborhoods.value);
+        
+        // only add markers that have crimes
+        if (marker_crimes > 0) {
+            let marker_layer = L.marker(marker.location).bindPopup(
+                `${marker_name}` +
+                ': ' +
+                `${marker_crimes}`
+            );
+            markers.value.push(marker_layer);
+            map.leaflet.addLayer(marker_layer);
+        }
+        
+    });
 }
 
 function getNeighborhoodNameById(id, neighborhoods) {
