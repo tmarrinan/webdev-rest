@@ -41,17 +41,17 @@ function getColorCode(code){
 </script>
 
 <template>
-    <div class="cell box">
-        <span id="clipIcon" v-bind:style="{color: getColorCode(incident.code)}"><ion-icon name="clipboard"></ion-icon></span>
-        <div class="caseNum">
+    <div class="cell box grid-x">
+        <span id="cell clipIcon" v-bind:style="{color: getColorCode(incident.code)}"><ion-icon name="clipboard"></ion-icon></span>
+        <div class="cell caseNum">
             <h1>Case</h1>
             <h4>{{ incident.case_number }}</h4>
         </div>
-        <div class="infopreview">
+        <div class="cell infopreview">
             <h1>Date:</h1>
             <h4>{{ incident.date }}</h4>
         </div>
-        <div class="learnButton">
+        <div class="cell learnButton">
             <button @click="isOpen = true">Learn More</button>
         </div>
         <teleport to="body">
@@ -64,14 +64,13 @@ function getColorCode(code){
 
 <style scoped>
 .box {
-    padding: .5em;
-    margin: .5em;
-    height: 20em;
-    border: 4px solid black;
+    margin-bottom: 1rem;
+    height: 22em;
+    border: 3px solid black;
     background-color: tan;
 }
 .box span{
-    font-size: 1.8em;
+    font-size: 2em;
 }
 h1{
     text-align: center;
@@ -90,7 +89,7 @@ h4{
     padding: .5em;
 }
 .learnButton button{
-    border: 3px solid rgb(0, 0, 0);
+    border: 2px solid rgb(0, 0, 0);
     border-radius: 1em;
     padding: .6em;
     font-weight: bold;
