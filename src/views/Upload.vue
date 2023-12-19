@@ -1,5 +1,5 @@
 <script setup>
-import {ref} from 'vue'
+import {reactive, ref} from 'vue'
 
 //Incident upload variables
 let caseNum = ref();
@@ -13,6 +13,18 @@ let AddressI = ref();
 let dialog_errIncidents = ref(false);
 let dialog_success = ref(false);
 let dialog_caseNumCheck = ref(false);
+let showCode = ref(false);
+let incidentTypeModel = ref('');
+let incidentCodeModel = ref('');
+let displayedCodes = ref('');
+let codeCategories = reactive([
+    {name:'Murder', value:'100-200'},
+    {name:'Rape', value:'200-300'},
+    {name:'Theft', value:'300-400,500-800'},
+    {name:'Assault', value:'400-500,800-900'},
+    {name:'Arson', value:'900-1000'},
+    {name:'Other', value:'1000-x'}
+]);
 
 
 //Upload incidents to database
@@ -53,6 +65,24 @@ async function uploadIncidents(){
         dialog_caseNumCheck.value = false;
     }
 }
+
+function updateIncidentCode(range){
+    showCode.value = true;
+    getCodeFromRange(range);
+    console.log(incidentCodeModel);
+    incidentCodeModel.value = '';
+}
+
+async function getCodeFromRange(range) {
+    fetchJson('http://localhost:8001/codes?code_range='+range)
+    .then(data => {
+        displayedCodes.value = data;
+    });
+}
+async function fetchJson(url) {
+    return fetch(url).then(response => response.json());
+}
+
 </script>
 
 <template>
@@ -79,13 +109,29 @@ async function uploadIncidents(){
                     <input type="time" id="time" name="time" required v-model="timeI"><br>
                 </div>
 
-                <div class="cell medium-6">
-                    <label for="code">Incident Code: <span style="color: red; font-weight: bold">*</span></label><br>
-                    <input type="number" id="code" name="code" required v-model="code" placeholder="XXX"><br>
+                <div class="cell medium-12">
+                    <label for="incident-type">Incident Type: <span style="color: red; font-weight: bold">*</span></label><br>
+                    <select v-model="incidentTypeModel" name="" id="incident-type" @change="updateIncidentCode(incidentTypeModel)">
+                        <option selected disabled value="">Select an Incident Type</option>
+                        <option
+                            v-for="types in codeCategories" :key="codeCategories.name"
+                                :value="types.value">
+                                {{ types.name }}
+                        </option>
+                    </select>
+                    <label v-if="showCode" for="incident-code">Incident Code: <span style="color: red; font-weight: bold">*</span></label><br>
+                    <select v-model="incidentCodeModel" v-if="showCode" name="" id="incident-code">
+                        <option selected disabled value="">Select a Code</option>
+                        <option
+                            v-for="codes in displayedCodes"
+                                value="codes.code">
+                                {{ codes.code }}: {{ codes.type }}
+                        </option>
+                    </select>
                 </div>
 
-                <div class="cell medium-6">
-                    <label for="Incident">What was the Incident?: <span style="color: red; font-weight: bold">*</span></label><br>
+                <div class="cell medium-12">
+                    <label for="Incident">Description: <span style="color: red; font-weight: bold">*</span></label><br>
                 <input type="text" id="Incident" name="Incident" required v-model="IncidentName" placeholder="EX: Robbery"><br>
                 </div>
 
