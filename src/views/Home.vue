@@ -6,7 +6,7 @@ let crime_url = ref("");
 let table = reactive([]);
 let dialog_err = ref(false);
 let neighborhood_array = reactive([
-  0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16,
+  1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17
 ]);
 let code_map = reactive({});
 let neighborhood_map = {};
@@ -145,7 +145,7 @@ function updateUI(){
     var lat = markerData.location[0];
     var lng = markerData.location[1];
     if (lat < nw_lat && lat > se_lat && lng > nw_lng && lng < se_lng) {
-      neighborhood_array.push(index);
+      neighborhood_array.push(index+1);
     }
   });
   return neighborhood_array;
