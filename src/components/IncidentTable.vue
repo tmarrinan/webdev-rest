@@ -1,24 +1,32 @@
 <script setup>
-import { computed, ref, onMounted } from 'vue';
+import { watch, computed, ref, onMounted } from 'vue';
 import IncidentRow from './IncidentRow.vue';
 const someProps = defineProps(['crimes', 'codes', 'neighborhoods', 'map']);
-let startItem = 0; //Lower limit 
-let endItem = 6; //Upper Limit
+let startItem = ref(0); //Lower limit 
+let endItem = ref(6); //Upper Limit
 let pageTotal = computed(() => Math.ceil(someProps.crimes.length / 6));
 let pageNum = ref(1);
 
 let isDisabledPrev = true;
 let isDisabledNext = false;
 
+//If the map changes, reset to page 1
+watch(pageTotal, (newValue, oldValue) => {
+    if (newValue !== oldValue){
+        pageNum.value = 1;
+        isDisabledPrev = true;
+        isDisabledNext = false;
+    }
+})
+
 function clickNext(){
-    pageTotal.value = Math.ceil(someProps.crimes.length / 6);
-    if (!(pageNum.value === pageTotal.value)){
+    if (!(pageNum.value >= pageTotal.value)){
         isDisabledNext = false;
         isDisabledPrev = false;
-        startItem = startItem + 6;
-        endItem = endItem + 6;
+        startItem.value = startItem.value + 6;
+        endItem.value = endItem.value + 6;
         pageNum.value = pageNum.value + 1;
-        if ((pageNum.value === pageTotal.value)){
+        if ((pageNum.value >= pageTotal.value)){
             isDisabledNext = true;
         }
     }else{
@@ -26,12 +34,11 @@ function clickNext(){
     }
 }
 function clickPrev(){
-    pageTotal.value = Math.ceil(someProps.crimes.length / 6);
     if (!(pageNum.value === 1)){
         isDisabledPrev = false;
         isDisabledNext = false;
-        startItem = startItem - 6;
-        endItem = endItem - 6;
+        startItem.value = startItem.value - 6;
+        endItem.value = endItem.value - 6;
         pageNum.value = pageNum.value - 1;
         if ((pageNum.value === 1)){
             isDisabledPrev = true;
@@ -69,9 +76,10 @@ function clickPrev(){
 
     <div class="cell" style="text-align: center; padding: 1em;">
         <h2 style="font-size: 2rem; font-weight: bold;">Crimes Database</h2>
-        <h3 style="font-size: 1.3rem; font-weight: bold;">Current Results: {{ crimes.length }}</h3>
+        <h3 v-if="crimes.length !== 0" style="font-size: 1.3rem; font-weight: bold;">Current Results: {{ crimes.length }}</h3>
+        <h3 v-else style="font-size: 1.3rem; font-weight: bold;">No Results</h3>
     </div>
-    <div class="cell grid-x grid-padding-x Legends">
+    <div v-if="pageTotal !== 0" class="cell grid-x grid-padding-x Legends">
         <h1 class="cell">Legends</h1>
         <p class="cell medium-2"><span class="L1"><ion-icon name="clipboard"></ion-icon></span> Murder</p>
         <p class="cell medium-2"><span class="L2"><ion-icon name="clipboard"></ion-icon></span> Rape</p>
@@ -80,7 +88,7 @@ function clickPrev(){
         <p class="cell medium-2"><span class="L5"><ion-icon name="clipboard"></ion-icon></span> Arson</p>
         <p class="cell medium-2"><span class="L6"><ion-icon name="clipboard"></ion-icon></span> Other</p>
     </div>
-    <div class="cell Tablebuttons grid-x grid-padding-x">
+    <div v-if="pageTotal !== 0" class="cell Tablebuttons grid-x grid-padding-x">
         <div class="cell medium-6">
             <button class="buttonPrev" :disabled='isDisabledPrev' @click="clickPrev()">Prev</button>
         </div>
@@ -88,7 +96,10 @@ function clickPrev(){
             <button class="buttonNext" :disabled='isDisabledNext' @click="clickNext()">Next</button>
         </div>
     </div>
-    <h2 class="cell" style=" font-weight: bold; font-size: 1.5em;">Page {{ pageNum }} of {{ pageTotal }}</h2>
+    <h2 v-if="pageTotal !== 0" class="cell" style=" font-weight: bold; font-size: 1.5em;">Page {{ pageNum }} of {{ pageTotal }}</h2>
+    <div v-else class="cell grid-x grid-padding-x" style="margin-bottom: 5em;">
+        <img src="https://media.tenor.com/LqwjX4mJgdcAAAAj/try-again-lee.gif" draggable="false" />
+    </div>
     <div class="grid-x grid-padding-x small-up-1 medium-up-2 large-up-3" v-if="crimes.length > 0">
         <IncidentRow v-for="incident in crimes.slice(startItem, endItem)" :incident="incident" :codes="codes" :neighborhoods="neighborhoods"></IncidentRow>
     </div>
