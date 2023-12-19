@@ -1,5 +1,5 @@
 <script setup>
-defineProps(['crimeTableData', 'deleteIncident']);
+defineProps(['crimeTableData', 'deleteIncident', 'plotData']);
 
 
 const violentCodes = [2619, 810, 861, 862, 863, 100, 110, 120, 210, 220, 400, 410, 411, 412, 420, 421, 422,

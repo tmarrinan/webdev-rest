@@ -232,6 +232,69 @@ function deleteIncident(caseNumber) {
     });
 }
 
+function plotData(caseNumber) {
+  const incident = crimeData.value.incidents.find(incident => incident.case_number === caseNumber);
+
+  if (incident) {
+    // Extract the block address from the incident
+    let blockAddress = incident.block; // Update this part based on your actual data structure
+
+    // Replace only the 'x' in the number with '0'
+    blockAddress = blockAddress.replace(/(\d*)X/g, '$10');
+
+    // Use Nominatim API to convert block address to latitude and longitude
+    const nominatimEndpoint = 'https://nominatim.openstreetmap.org/search';
+    const params = new URLSearchParams({
+      q: blockAddress,
+      format: 'json',
+    });
+    const nominatimUrl = `${nominatimEndpoint}?${params.toString()}`;
+
+    fetch(nominatimUrl)
+      .then(response => response.json())
+      .then(data => {
+        if (data && data.length > 0) {
+          // Get the first result (assuming it's the most relevant)
+          const result = data[0];
+
+          // Extract the latitude and longitude from the result
+          const latitude = result.lat;
+          const longitude = result.lon;
+
+          // Define a custom icon for the marker
+          const customIcon = L.icon({
+            iconUrl: 'https://cdn4.iconfinder.com/data/icons/small-n-flat/24/map-marker-1024.png', // Replace with the path to your custom marker image
+            iconSize: [32, 32], // Adjust the size of your custom marker
+            iconAnchor: [16, 32], // Adjust the anchor point of your custom marker
+            popupAnchor: [0, -32], // Adjust the popup anchor of your custom marker
+          });
+
+          // Create a marker with the custom icon at the specified location
+          const marker = L.marker([latitude, longitude], { icon: customIcon })
+            .addTo(map.leaflet)
+            .bindPopup(`Case Number: ${caseNumber}`);
+
+            // Check if the marker was successfully added
+            if (marker) {
+            // Optionally, open the popup when the marker is added
+            marker.openPopup();
+            } else {
+            console.error('Marker creation failed.');
+            }
+        } else {
+          console.error(`No location found for caseNumber ${caseNumber}.`);
+        }
+      })
+      .catch(error => {
+        console.error('Error geocoding:', error);
+      });
+  } else {
+    console.error(`Incident with caseNumber ${caseNumber} not found.`);
+  }
+}
+
+
+
 
 
 
@@ -251,7 +314,7 @@ function deleteIncident(caseNumber) {
                 <pageLegend></pageLegend>
             </div>
             <template v-if="!isLoading">
-                <pageTable :crimeTableData="crimeTableData" :deleteIncident="deleteIncident"></pageTable>
+                <pageTable :crimeTableData="crimeTableData" :deleteIncident="deleteIncident" :plotData="plotData"></pageTable>
             </template>
             <template v-else>
                 <p>Loading data...</p>
