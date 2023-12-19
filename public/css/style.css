@@ -17,15 +17,20 @@ html {
 }
 
 .advanced-search{
-    user-select: none;
-    background-color: aquamarine;
-    border-radius: 2rem;
+    color: white;
+    background-color: black;
+    border-radius: .5rem;
     padding: 0.4rem;
     margin-top: 0.5rem;
+    margin-bottom: 0.5rem;
+    border: 2px solid black;
+    font-weight: bold;
+    cursor: pointer;
 }
 
 .advanced-search:hover{
-    background-color: azure;
+    background-color: white;
+    color: black;
 }
 
 .tag-button{

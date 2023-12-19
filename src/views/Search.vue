@@ -157,8 +157,6 @@ function calculateCrimes(name, crimes, neighborhoods) {
 
 // Function called when user presses 'OK' on dialog box
 function closeDialog() {
-    let dialog = document.getElementById('rest-dialog');
-    let url_input = document.getElementById('dialog-url');
     let loc_input = document.getElementById('dialog-loc');
 
     if(loc_input != null && loc_input.value !== ''){
@@ -191,16 +189,6 @@ function closeDialog() {
         }
         console.log(collectiveInfo);
     }
-    /*/
-    if (crime_url.value !== '' && url_input.checkValidity()) {
-        dialog_err.value = false;
-        dialog.close();
-        initializeCrimes();
-    }
-    else {
-        dialog_err.value = true;
-    }
-    //*/
 }
 
 //in search bar try "Frogtown, MN"
@@ -285,9 +273,9 @@ async function updateVisibleCrimes() {
 
         return false;
     });
-    if (visible.length > 0) {
-        test.value = true;
-    }
+    // if (visible.length > 0) {
+    //     test.value = true;
+    // }
     console.log("visibleCrimes count: ", visible.length);
     // Update crimes with visible crimes
     visibleCrimes.value = visible;
@@ -306,25 +294,30 @@ async function updateVisibleCrimes() {
         <button class="button" type="button" @click="closeDialog">GO</button>
     </dialog> -->
     
-    <div class="grid-container" style="padding: 0; margin-left: 0%; background-color: red; max-width: 100%;">
-        <div class="grid-x" style="background-color: yellow; margin: 0; padding: 0;">
+    <div class="grid-container">
+        
+        <div class="grid-x">
             <!-- might not need hardcoded height when all filters are added-->
-            <div id="rest-dialog" class="cell small-4 grid-container" style="background-color: green; margin: 0; padding:0;min-height: 500px;">
-                <div class="grid-container">
-                    <h1 class="dialog-header">St. Paul Crime REST API</h1>
-                    <div class="grid-y grid-margin-y">
-                        <div class="grid-x" v-if="!advancedSearch">
-                            <label class="dialog-label">Location: </label>
-                            <input id="dialog-loc" class="dialog-input cell small-12" v-model="location" placeholder="Enter a location" />
-                            <button class="advanced-search cell small-12 large-4" type="button" @click="setAdvancedSearch(true)" >Advanced Search</button>
+            <div class="cell large-5 grid-x" style="border: 4px solid black;">
+
+                <div class="cell grid-x">
+                    <h1 class="cell dialog-header" style="text-align: center;">St. Paul Crime REST API</h1>
+                    <div class="cell grid-x grid-padding-x">
+
+                        <div class="cell grid-x" v-if="!advancedSearch">
+                            <label class="cell dialog-label" style="font-weight: bold;">Location: </label>
+                            <input id="dialog-loc" class="dialog-input cell" v-model="location" placeholder="Enter a location" />
+                            <button class="advanced-search cell" type="button" @click="setAdvancedSearch(true)" >Advanced Search</button>
                         </div>
-                        <div v-if="advancedSearch">
-                            <div class="grid-x"><button class="advanced-search cell small-12 large-4"
+                        <div class="cell grid-x" v-if="advancedSearch">
+                            <div class="cell">
+                                <button class="advanced-search cell"
                                 type="button" @click="setAdvancedSearch(false)" >Revert to Searchbar</button>
                             </div>
+
                             <!-- Advanced FILTERS -->
-                            <div class="grid-x">
-                                <label for="incident-type" class="cell small-12">Incident Type</label>
+                            <div class="cell grid-x">
+                                <label for="incident-type" class="cell" style="font-weight: bold;">Incident Type: </label>
                                 <select v-model="incidentModel" id="incident-type" class="cell small-10 large-6">
                                     <option selected disabled value="">Select an Incident Type</option>
                                     <option
@@ -334,7 +327,8 @@ async function updateVisibleCrimes() {
                                     </option>
                                 </select>
                                 <button class="button cell small-2" type="button" @click="addTag(vModels.incidentModel)">+</button>
-                                <label for="incident-type" class="cell small-12">Neighborhood Name</label>
+
+                                <label for="incident-type" class="cell" style="font-weight: bold;">Neighborhood Name: </label>
                                 <select v-model="neighborhoodModel" id="code" class="small-10 large-6">
                                     <option selected disabled value="">Select a neighborhood</option>
                                     <option
@@ -344,23 +338,30 @@ async function updateVisibleCrimes() {
                                     </option>
                                 </select>
                                 <button class="button cell small-2" type="button" @click="addTag(vModels.neighborhoodModel)">+</button>
+
                             </div>
-                            <div class="grid-x">
-                                <label for="start-date" class="cell small-12">Start Date</label>
-                                <input v-model="startDate" class="cell small-12 large-4 grid-container input-filter" type="date" id="start-date" pattern="\d{4}-\d{2}-\d{2}">
+
+                            <div class="cell grid-x">
+                                <div class="cell medium-6">
+                                    <label for="start-date" class="cell" style="font-weight: bold;">Start Date: </label>
+                                    <input v-model="startDate" class="cell input-filter" type="date" id="start-date" pattern="\d{4}-\d{2}-\d{2}">
+                                </div>
+                                <div class="cell medium-6">
+                                    <label for="end-date" class="cell" style="font-weight: bold;">End Date: </label>
+                                    <input v-model="endDate" class="input-filter" type="date" id="end-date" pattern="\d{4}-\d{2}-\d{2}">
+                                </div>
                             </div>
-                            <div class="grid-x">
-                                <label for="end-date" class="cell small-12">End Date</label>
-                                <input v-model="endDate" class="small-12 large-4 grid-container input-filter" type="date" id="end-date" pattern="\d{4}-\d{2}-\d{2}">
-                            </div>
-                            <div class="grid-x">
-                                <label for="limit" class="cell small-12">Limit</label>
-                                <input v-model="limit" class="cell small-12 large-4 grid-container input-filter" type="number" id="limit" placeholder="1000">
+                            <div class="cell grid-x">
+                                <label for="limit" class="cell" style="font-weight: bold;">Limit: </label>
+                                <input v-model="limit" class="cell input-filter" type="number" id="limit" placeholder="1000">
                             </div>
                         </div>
                         <button class="button cell" type="button" @click="closeDialog">GO</button>
+
                     </div>
+
                 </div>
+
                 <div class="cell small-12" style="margin-top:1rem; padding: 1rem; background-color: aquamarine;">
                     <div class="button tag-button"
                         v-for="tag in tags" >
@@ -369,17 +370,18 @@ async function updateVisibleCrimes() {
                     </div>
                 </div>
             </div>
-            <div class="cell small-8" style="background-color: blue;">
-                <div id="leafletmap"  style="margin:0; padding: 0; height: 100%;"></div>
+
+            <div class="cell large-7">
+                <div id="leafletmap"  style="margin:0; padding: 0; height: 700px; border: 4px solid black"></div>
             </div>
+
         </div>
+
     </div>
     <div class="grid-container">
-        <IncidentTable v-if="visibleCrimes.length > 0" id="table" :crimes="visibleCrimes" :codes="codes" :neighborhoods="neighborhoods" :map="map"></IncidentTable>
-        <IncidentTable v-else id="table" :crimes="crimes" :codes="codes" :neighborhoods="neighborhoods" :map="map"></IncidentTable>
+        <div class="grid-x">
+            <IncidentTable v-if="visibleCrimes.length > 0" id="table" :crimes="visibleCrimes" :codes="codes" :neighborhoods="neighborhoods" :map="map"></IncidentTable>
+            <IncidentTable v-else id="table" :crimes="crimes" :codes="codes" :neighborhoods="neighborhoods" :map="map"></IncidentTable>
+        </div>
     </div>
 </template>
-
-<style scoped>
-
-</style>

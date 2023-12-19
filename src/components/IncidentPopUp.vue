@@ -1,7 +1,8 @@
 <script setup>
-import { reactive, onMounted } from 'vue';
+import { ref, reactive, onMounted } from 'vue';
 defineProps(['incident', 'codes', 'neighborhoods']);
 defineEmits('close');
+let statusLocation = ref(true);
 
 let map = reactive(
         {
@@ -87,9 +88,11 @@ async function markerMap(address, code, neighborhood_number, neighborhoods){
             }).addTo(map.leaflet).bindPopup(
                 `${address}`
             );
+            statusLocation.value = true;
         }else{
             console.log("Not found");
             //set the general area (WIP)
+            statusLocation.value = false;
         }
         console.log(data);
     })
@@ -100,12 +103,19 @@ async function markerMap(address, code, neighborhood_number, neighborhoods){
 
 
 //--TESTING------------------------------------------
-//Replace X with 0 (Testing)
+function allEqual(input) {
+    return input.split('').every(char => char === input[0]);
+}
+//Replace X with 0
 function completeAddress(block, code, neighborhood_number, neighborhoods){
     console.log(block);
-    let blockArr = block.split(" ");
-
-    blockArr[0] = blockArr[0].replaceAll("X", "0");
+    let blockArr = block.split(" "); //split into an array of group string (Ex: "Summit Ave" -> ["Summit", "Ave"])
+    //9XX if first char is an int or if all X
+    if ((blockArr[0][0] >= '0' && blockArr[0][0] <= '9') || allEqual(blockArr[0])){
+        blockArr[0] = blockArr[0].replaceAll("X", "0");
+    }
+    //add St. Paul, MN at the end of the string
+    blockArr.push("St. Paul, MN");
     markerMap(blockArr.join(' '), code, neighborhood_number, neighborhoods);
     return blockArr.join(' ');
 }
@@ -185,6 +195,7 @@ function getNeighborhoodNameById(id, neighborhoods) {
                 <div class="cell medium-4">
                     <h2 class="cell">{{ incident.date }} / {{ incident.time }}</h2>
                     <h3 class="cell">{{ getIncidentTypeByCode(incident.code, codes)}}</h3>
+                    <h6>Status Location: <span v-if="statusLocation" style="color:green; font-weight: bold">Found</span> <span v-else style="color:red; font-weight: bold">Not Found</span></h6>
                 </div>
 
                 <div class="cell medium-8">

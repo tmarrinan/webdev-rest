@@ -59,11 +59,11 @@
                                 <div class="slide slide_1 grid-container">
                                     <div class="slide-content grid-x grid-margin-x">
                                         <div class="cell medium-5">
-                                            <img src="https://s1.zerochan.net/Miles.%22Tails%22.Prower.600.2244411.jpg" width="300px" height="300px" />
+                                            <img src="https://www.choicehotels.com/cms/images/choice-hotels/explore/img_minneapolis-minnesota-downtown_sunset/img_minneapolis-minnesota-downtown_sunset.jpg" width="300px" height="300px" />
                                         </div>
                                         <div class="cell medium-7">
-                                            <h2>Tails</h2>
-                                            <p>Lorem ipsum dolor sit amet consectetur adipisicing elit. Eos nemo laboriosam id architecto autem natus et quo tempore? Minus distinctio omnis exercitationem veniam cumque nihil expedita modi atque natus alias!</p>
+                                            <h2>Highest Number of Crimes in St. Paul</h2>
+                                            <p>Captial River, as of today, has the highest number of crimes in St. Paul Minnesota! They have 118 total crimes in that area.</p>
                                         </div>
                                     </div>
                                 </div>
