@@ -12,11 +12,11 @@ let codes = ref([]);
 let neighborhoods = ref([]);
 let visibleCrimes = ref([]);
 let codeCategories = reactive([
-    {name:'Murder', value:'100-200'},
-    {name:'Rape', value:'200-300'},
-    {name:'Theft', value:'300-400,500-800'},
-    {name:'Assault', value:'400-500,800-900'},
-    {name:'Arson', value:'900-1000'},
+    {name:'Murder', value:'100-199'},
+    {name:'Rape', value:'200-299'},
+    {name:'Theft', value:'300-399,500-799'},
+    {name:'Assault', value:'400-499,800-899'},
+    {name:'Arson', value:'900-999'},
     {name:'Other', value:'1000-x'}
 ]);
 let startDate = ref();
@@ -111,10 +111,14 @@ onMounted(() => {
                 `${marker_name}` +
                 ': ' +
                 `${marker_crimes}`
-        );
+        ).on('click', ()=>{
+            console.log("Pan in!");
+            location.value = marker_name+" Saint Paul, MN";
+            document.getElementById('dialog-loc').value = marker.location;
+            closeDialog();
+        });
     });
-    })
-    .catch(error => {
+    }).catch(error => {
             console.log('Error:', error);
     });
     
@@ -132,6 +136,7 @@ async function initializeCrimes() {
         crimes.value = data[0];
         codes.value = data[1];
         neighborhoods.value = data[2];
+        updateVisibleCrimes();
     });
 }
 
@@ -202,9 +207,23 @@ function locationZoom(loc){
         if(data.length > 0){
             let lat = data[0].lat;
             let lon = data[0].lon;
-            map.leaflet.setView([lat, lon], 14);
+
+            //see if it is outside of the map
+            const bounds = map.leaflet.getBounds();
+
+            // Check if the marker is within the map bounds
+            const markerLatLng = L.latLng([lat, lon]);
+            console.log("Is it there?: "+bounds.contains(markerLatLng));
+
+            if (bounds.contains(markerLatLng)){
+                map.leaflet.setView([lat, lon], 14);
+            }else{
+                alert("That location is out of bounds. Try Again.")
+            }
+
         }else{
-            console.log("Not found");
+            //console.log("Not found");
+            alert("Location not found. Try Again.")
         }
         console.log(data);
     })
@@ -240,14 +259,14 @@ function within(target, array){
     return false;
 }
 
-function handleMapMove() {
+async function handleMapMove() {
   map.bounds.nw = map.leaflet.getBounds().getNorthWest();
   map.bounds.se = map.leaflet.getBounds().getSouthEast();
   map.center = map.leaflet.getCenter();
   updateVisibleCrimes();
 };
 
-function handleMapZoom() {
+async function handleMapZoom() {
   map.bounds.nw = map.leaflet.getBounds().getNorthWest();
   map.bounds.se = map.leaflet.getBounds().getSouthEast();
   map.center = map.leaflet.getCenter();
@@ -258,6 +277,7 @@ async function updateVisibleCrimes() {
     const bounds = map.leaflet.getBounds();
     //const nw = bounds.getNorthWest();
     //const se = bounds.getSouthEast();
+    console.log("initial length: "+crimes);
 
     const visible = crimes.value.filter(crime => {
         const neighborhoodId = crime.neighborhood_number;
@@ -270,14 +290,10 @@ async function updateVisibleCrimes() {
             const markerLatLng = L.latLng(neighborhoodMarker.location);
             return bounds.contains(markerLatLng);
         }
-
         return false;
     });
-    // if (visible.length > 0) {
-    //     test.value = true;
-    // }
+
     console.log("visibleCrimes count: ", visible.length);
-    // Update crimes with visible crimes
     visibleCrimes.value = visible;
 }
 
@@ -380,8 +396,7 @@ async function updateVisibleCrimes() {
     </div>
     <div class="grid-container">
         <div class="grid-x">
-            <IncidentTable v-if="visibleCrimes.length > 0" id="table" :crimes="visibleCrimes" :codes="codes" :neighborhoods="neighborhoods" :map="map"></IncidentTable>
-            <IncidentTable v-else id="table" :crimes="crimes" :codes="codes" :neighborhoods="neighborhoods" :map="map"></IncidentTable>
+            <IncidentTable id="table" :crimes="visibleCrimes" :codes="codes" :neighborhoods="neighborhoods" :map="map"></IncidentTable>
         </div>
     </div>
 </template>
