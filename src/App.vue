@@ -140,30 +140,40 @@ function initializeCrimes() {
 }
 
 function addNeighborhoodMarkers() {
-    map.neighborhood_markers.forEach((neighborhood) => {
-        const marker = L.marker(neighborhood.location)
-            .addTo(map.leaflet)
-            .bindPopup('Loading...'); // Display a loading message initially
+  // Clear existing markers
+  map.leaflet.eachLayer(layer => {
+    if (layer instanceof L.Marker) {
+      map.leaflet.removeLayer(layer);
+    }
+  });
 
-        // Fetch the number of incidents for the current neighborhood
-        fetch(`${crime_url.value}/incidents?id=${neighborhood.number}&limit=10000000`)
-    .then(response => {
+  map.neighborhood_markers.forEach((neighborhood) => {
+    const marker = L.marker(neighborhood.location)
+      .addTo(map.leaflet)
+      .bindPopup('Loading...'); // Display a loading message initially
+
+    // Fetch the number of incidents for the current neighborhood
+    fetch(`${crime_url.value}/incidents?id=${neighborhood.number}&limit=10000000`)
+      .then(response => {
         if (!response.ok) {
-            throw new Error(`HTTP error! Status: ${response.status}`);
+          throw new Error(`HTTP error! Status: ${response.status}`);
         }
         return response.json();
-    })
-    .then(data => {
-        // Process the JSON data
-        marker.setPopupContent(`${neighborhood.marker} # of crimes: ${data.length}`);
-    })
-    .catch(error => {
+      })
+      .then(data => {
+        // Check if the marker and map are available before updating the popup content
+        if (marker && map.leaflet) {
+          marker.setPopupContent(`${neighborhood.marker} # of crimes: ${data.length}`);
+        }
+      })
+      .catch(error => {
         console.error(`Error fetching incidents for ${neighborhood.marker}:`, error);
         // Handle non-JSON response or other errors
-        marker.setPopupContent(`Error fetching incidents for ${neighborhood.marker}`);
-    });
-
-    });
+        if (marker && map.leaflet) {
+          marker.setPopupContent(`Error fetching incidents for ${neighborhood.marker}`);
+        }
+      });
+  });
 }
 
 
@@ -183,40 +193,42 @@ function closeDialog() {
 
 
 function deleteIncident(caseNumber) {
-    // Send DELETE request to the server
-    fetch(crime_url.value + '/remove-incident?case_number=' + caseNumber, {
-        method: 'DELETE',
-        headers: {
-            'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ case_number: caseNumber }),
-    })
+  // Send DELETE request to the server
+  fetch(crime_url.value + '/remove-incident?case_number=' + caseNumber, {
+    method: 'DELETE',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({ case_number: caseNumber }),
+  })
     .then(response => {
-        if (!response.ok) {
-            throw new Error(`HTTP error! Status: ${response.status}`);
-        }
-        return response.json();
+      if (!response.ok) {
+        throw new Error(`HTTP error! Status: ${response.status}`);
+      }
+      return response.json();
     })
     .then(data => {
-        console.log('Incident Removed successfully:', data);
+      console.log('Incident Removed successfully:', data);
 
-        // Update the incidents array by filtering out the deleted incident
-        const updatedIncidents = crimeData.value.incidents.filter(incident => incident.case_number !== caseNumber);
+      // Update the incidents array by filtering out the deleted incident
+      const updatedIncidents = crimeData.value.incidents.filter(incident => incident.case_number !== caseNumber);
 
-        // Sort the updated incidents array by date_time
-        updatedIncidents.sort((a, b) => new Date(b.date_time) - new Date(a.date_time));
+      // Sort the updated incidents array by date_time
+      updatedIncidents.sort((a, b) => new Date(b.date_time) - new Date(a.date_time));
 
-        // Update crimeData.value.incidents with the new sorted array
-        crimeData.value.incidents = reactive(updatedIncidents);
+      // Update crimeData.value.incidents with the new sorted array
+      crimeData.value.incidents = reactive(updatedIncidents);
 
-        // Update crimeTableData
-        crimeTableData.value = reactive([...updatedIncidents]);
-        addNeighborhoodMarkers();
+      // Update crimeTableData
+      crimeTableData.value = reactive([...updatedIncidents]);
+
+      // Add new markers
+      addNeighborhoodMarkers();
 
     })
     .catch(error => {
-        // Handle errors or display a message to the user
-        console.error('Error Removing incident:', error.message);
+      // Handle errors or display a message to the user
+      console.error('Error Removing incident:', error.message);
     });
 }
 
