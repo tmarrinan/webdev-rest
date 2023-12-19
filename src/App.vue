@@ -18,6 +18,10 @@ let crimeData = ref({
   incidents: []
 });
 
+
+let crimeTableData = ref([]);
+let isLoading = ref(false);
+
 let map = reactive(
     {
         leaflet: null,
@@ -32,29 +36,34 @@ let map = reactive(
             se: {lat: 44.883658, lng: -92.993787}
         },
         neighborhood_markers: [
-            {location: [44.942068, -93.020521], marker: null},
-            {location: [44.977413, -93.025156], marker: null},
-            {location: [44.931244, -93.079578], marker: null},
-            {location: [44.956192, -93.060189], marker: null},
-            {location: [44.978883, -93.068163], marker: null},
-            {location: [44.975766, -93.113887], marker: null},
-            {location: [44.959639, -93.121271], marker: null},
-            {location: [44.947700, -93.128505], marker: null},
-            {location: [44.930276, -93.119911], marker: null},
-            {location: [44.982752, -93.147910], marker: null},
-            {location: [44.963631, -93.167548], marker: null},
-            {location: [44.973971, -93.197965], marker: null},
-            {location: [44.949043, -93.178261], marker: null},
-            {location: [44.934848, -93.176736], marker: null},
-            {location: [44.913106, -93.170779], marker: null},
-            {location: [44.937705, -93.136997], marker: null},
-            {location: [44.949203, -93.093739], marker: null}
+        { location: [44.942068, -93.020521], marker: 'Southeast', number:1 }, 
+                    { location: [44.977413, -93.025156], marker: 'Greater East Side', number:2 },
+                    { location: [44.931244, -93.079578], marker: 'West Side', number:3 },
+                    { location: [44.956192, -93.060189], marker: "Dayton's Bluff", number:4  },
+                    { location: [44.978883, -93.068163], marker: 'Payne - Phalen', number:5  },
+                    { location: [44.975766, -93.113887], marker: 'North End', number:6 },
+                    { location: [44.959639, -93.121271], marker: 'Frogtown', number:7 },
+                    { location: [44.947700, -93.128505], marker: 'Summit - University', number:8 },
+                    { location: [44.930276, -93.119911], marker: 'West Seventh - Fort Road', number:9 },
+                    { location: [44.982752, -93.147910], marker: 'Como Park', number:10 },
+                    { location: [44.963631, -93.167548], marker: 'Hamline - Midway', number:11 },
+                    { location: [44.973971, -93.197965], marker: 'Saint Anthony Park', number:12 },
+                    { location: [44.949043, -93.178261], marker: 'Union Park', number:13 },
+                    { location: [44.934848, -93.176736], marker: 'Macalestar - Groveland', number:14 },
+                    { location: [44.913106, -93.170779], marker: 'Highland', number:15 },
+                    { location: [44.937705, -93.136997], marker: 'Summit Hill', number:16 },
+                    { location: [44.949203, -93.093739], marker: 'Capital River', number:17 }
         ]
     }
 );
 
 // Vue callback for once <template> HTML has been added to web page
 onMounted(() => {
+
+    initializeCrimes().then(() => {
+        isLoading.value = false;
+    });
+
     // Create Leaflet map (set bounds and valied zoom levels)
     map.leaflet = L.map('leafletmap').setView([map.center.lat, map.center.lng], map.zoom);
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
@@ -86,32 +95,74 @@ onMounted(() => {
 // FUNCTIONS
 // Function called once user has entered REST API URL
 function initializeCrimes() {
+    return new Promise((resolve, reject) => {
+        fetch(crime_url.value + '/codes')
+        .then(response => response.json())
+        .then(data => {
+            crimeData.value.codes = data;
+        })
+        .catch(error => {
+            console.error('Error fetching codes', error);
+            reject(error);
+        })
+        fetch(crime_url.value + '/neighborhoods')
+        .then(response => response.json())
+        .then(data => {
+            crimeData.value.neighborhoods = data;
+        })
+        .catch(error => {
+            console.error('Error fetching neighborhoods', error);
+            reject(error);
+        })
+        fetch(crime_url.value + '/incidents')
+        .then(response => response.json())
+        .then(data => {
+            crimeData.value.incidents = data;
 
-    fetch(crime_url.value + '/codes')
-    .then(response => response.json())
+            crimeTableData.value = data.map(incident => {
+                return{
+                    case_number: incident.case_number,
+                    date_time: incident.date_time,
+                    code: incident.code,
+                    incident: incident.incident,
+                    police_grid: incident.police_grid,
+                    neighborhood_number: incident.neighborhood_number,
+                    block: incident.block
+                };
+            });
+            crimeTableData.value.sort((a,b) => new Date(b.date_time) - new Date(a.date_time));
+            resolve();
+        })
+        .catch(error => {
+            reject(error);
+        }); 
+    });
+}
+
+function addNeighborhoodMarkers() {
+    map.neighborhood_markers.forEach((neighborhood) => {
+        const marker = L.marker(neighborhood.location)
+            .addTo(map.leaflet)
+            .bindPopup('Loading...'); // Display a loading message initially
+
+        // Fetch the number of incidents for the current neighborhood
+        fetch(`${crime_url.value}/incidents?id=${neighborhood.number}&limit=10000000`)
+    .then(response => {
+        if (!response.ok) {
+            throw new Error(`HTTP error! Status: ${response.status}`);
+        }
+        return response.json();
+    })
     .then(data => {
-      crimeData.value.codes = data;
+        // Process the JSON data
+        marker.setPopupContent(`${neighborhood.marker} # of crimes: ${data.length}`);
     })
     .catch(error => {
-      console.error('Error fetching codes:', error);
+        console.error(`Error fetching incidents for ${neighborhood.marker}:`, error);
+        // Handle non-JSON response or other errors
+        marker.setPopupContent(`Error fetching incidents for ${neighborhood.marker}`);
     });
 
-    fetch(crime_url.value + '/neighborhoods')
-    .then(response => response.json())
-    .then(data => {
-      crimeData.value.neighborhoods = data;
-    })
-    .catch(error => {
-      console.error('Error fetching neighborhoods:', error);
-    });
-
-    fetch(crime_url.value + '/incidents')
-    .then(response => response.json())
-    .then(data => {
-      crimeData.value.incidents = data;
-    })
-    .catch(error => {
-      console.error('Error fetching incidents:', error);
     });
 }
 
@@ -122,12 +173,54 @@ function closeDialog() {
     if (crime_url.value !== '' && url_input.checkValidity()) {
         dialog_err.value = false;
         initializeCrimes();
-        sendConsole();
+        addNeighborhoodMarkers();
+        
     }
     else {
         dialog_err.value = true;
     }
 }
+
+
+function deleteIncident(caseNumber) {
+    // Send DELETE request to the server
+    fetch(crime_url.value + '/remove-incident?case_number=' + caseNumber, {
+        method: 'DELETE',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ case_number: caseNumber }),
+    })
+    .then(response => {
+        if (!response.ok) {
+            throw new Error(`HTTP error! Status: ${response.status}`);
+        }
+        return response.json();
+    })
+    .then(data => {
+        console.log('Incident Removed successfully:', data);
+
+        // Update the incidents array by filtering out the deleted incident
+        const updatedIncidents = crimeData.value.incidents.filter(incident => incident.case_number !== caseNumber);
+
+        // Sort the updated incidents array by date_time
+        updatedIncidents.sort((a, b) => new Date(b.date_time) - new Date(a.date_time));
+
+        // Update crimeData.value.incidents with the new sorted array
+        crimeData.value.incidents = reactive(updatedIncidents);
+
+        // Update crimeTableData
+        crimeTableData.value = reactive([...updatedIncidents]);
+        addNeighborhoodMarkers();
+
+    })
+    .catch(error => {
+        // Handle errors or display a message to the user
+        console.error('Error Removing incident:', error.message);
+    });
+}
+
+
 
 
 </script>
@@ -145,6 +238,12 @@ function closeDialog() {
             <div>
                 <pageLegend></pageLegend>
             </div>
+            <template v-if="!isLoading">
+                <pageTable :crimeTableData="crimeTableData" :deleteIncident="deleteIncident"></pageTable>
+            </template>
+            <template v-else>
+                <p>Loading data...</p>
+            </template>
         </div>
         <div class="cell large-3 columns bar">
             <div style="padding-bottom: 15px;">

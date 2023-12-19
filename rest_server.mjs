@@ -215,20 +215,23 @@ app.put('/new-incident/:case_number', (req, res) => {
 
 // DELETE request handler for new crime incident
 app.delete('/remove-incident', async (req, res) => {
-    const caseNumber = req.query.case_number;
-    let query = 'DELETE FROM Incidents WHERE case_number = ' + caseNumber;
-    let params = [];
-    console.log(query);
-    dbRun(query, params)
-        .then(() => {
-            console.log('Incident Removed successfully');
-            res.status(200).json({ message: 'Incident Removed successfully' });
-        })
-        .catch((error) => {
-            console.error('Error Removing incident:', error.message);
-            res.status(500).json({ error: error.message });
-        });
-    console.log(params);    
+    const caseNumber = req.body.case_number;
+
+    if (!caseNumber) {
+        return res.status(400).json({ error: 'Missing case_number in the request body' });
+    }
+
+    const query = 'DELETE FROM Incidents WHERE case_number = ?';
+    const params = [caseNumber];
+
+    try {
+        await dbRun(query, params);
+        console.log('Incident Removed successfully');
+        res.status(200).json({ message: 'Incident Removed successfully' });
+    } catch (error) {
+        console.error('Error Removing incident:', error.message);
+        res.status(500).json({ error: error.message });
+    }
 });
 //"http://localhost:8000/Remove-incident?case_number=14174423"
 
