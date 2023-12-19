@@ -232,6 +232,43 @@ function deleteIncident(caseNumber) {
     });
 }
 
+function submitIncident(formData) {
+  // Validate form data
+  if (!formData.date_time /* Add other validations as needed */) {
+    // Show error message
+    dialog_err.value = true;
+    return;
+  }
+
+  // Make the PUT request to add a new incident
+  const putData = {
+    case_number: generateCaseNumber(), // Implement a function to generate a case number
+    date_time: formData.date_time,
+    // Add other form fields to putData as needed
+  };
+
+  fetch(`${crime_url.value}/new-incident/${putData.case_number}`, {
+    method: 'PUT',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(putData),
+  })
+    .then(response => response.json())
+    .then(data => {
+      console.log('Incident added successfully:', data);
+      initializeCrimes();
+      addNeighborhoodMarkers();
+    })
+    .catch(error => {
+      console.error('Error adding incident:', error);
+      // Handle error or display a message to the user
+    });
+}
+
+
+
+
 function plotData(caseNumber) {
   const incident = crimeData.value.incidents.find(incident => incident.case_number === caseNumber);
 
@@ -314,7 +351,7 @@ function plotData(caseNumber) {
                 <pageLegend></pageLegend>
             </div>
             <template v-if="!isLoading">
-                <pageTable :crimeTableData="crimeTableData" :deleteIncident="deleteIncident" :plotData="plotData"></pageTable>
+                <pageTable :crimeTableData="crimeTableData" :deleteIncident="deleteIncident" :plotData="plotData" style="width: 100%;"></pageTable>
             </template>
             <template v-else>
                 <p>Loading data...</p>

@@ -91,9 +91,9 @@ function getRowColorClass(code) {
 
 <template>
 
-    <div>
-        <table v-if="crimeTableData && crimeTableData.length > 0">
-            <thead>
+    <div style="width: 100%;">
+        <table style="width: 100%;" v-if="crimeTableData && crimeTableData.length > 0">
+            <thead style="width: 100%;">
                 <tr>
                     <th>Case Number</th>
                     <th>Date and Time</th>
@@ -106,7 +106,7 @@ function getRowColorClass(code) {
                     <th>Delete Data</th>
                 </tr>
             </thead>
-            <tbody>
+            <tbody style="width: 100%;">
                 <tr style="border-radius: 10px;" v-for="item in crimeTableData" :key="item.case_number" :class="getRowColorClass(item.code)">
                     <td>{{ item.case_number }}</td>
                     <td>{{ item.date_time }}</td>

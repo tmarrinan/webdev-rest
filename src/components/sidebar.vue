@@ -1,9 +1,13 @@
 <script>
+import { getTransitionRawChildren } from "vue";
+import NewIncidentForm from "./newIncident.vue";
 
 
 export default{
     data(){
         return {
+          showIncidentForm: false,
+
             filtered: {
                 incidents: [],
                 neighborhoods: [],
@@ -80,7 +84,17 @@ export default{
     toggleNeighborhoodDropdown() {
       this.showNeighborhoodDropdown = !this.showNeighborhoodDropdown;
     },
-  }
+    openIncidentForm(){
+      this.showIncidentForm = true;
+    },
+    submitIncident(formData){
+      this.$emit("submitIncident", formData);
+      this.showIncidentForm = false;
+    },
+  },
+  components: {
+    NewIncidentForm,
+  },
 }
 
 
@@ -152,7 +166,8 @@ export default{
             <a class="button" style="width: 100%">Apply Filters</a>
         </div>
         <div class="select">
-            <a class="button" style="width: 100%">Submit New Incident</a>
+            <button class="button" @click="openIncidentForm">Submit New Incident</button>
+            <NewIncidentForm v-if="showIncidentForm" @submits="submitIncident"></NewIncidentForm>
         </div>
     </div>
   </template>
