@@ -30,17 +30,16 @@
           this.onSelect(this.address, this.date, this.time, this.incident, this.case_number);
         } else {
           // Unselect logic
-          this.onUnselect(this.case_number);
+          this.onUnselect(this.case_number, this.selected);
         }
   
         // Toggle the selected state
-        this.selected = !this.selected;
         this.$emit('selected-updated', this.selected);
       },
     },
     computed: {
       buttonText() {
-        return this.selected ? "Unselect" : "Select";
+        return this.selected ? "" : "Select";
       },
     },
   };

@@ -413,7 +413,7 @@ const selectCrime = (address, date, time, incident, case_number) => {
     });
 };
 
-const removeMarker = (case_number) => {
+const removeMarker = (case_number, selected) => {
   let indexToRemove = map.crime_markers.findIndex(
     (item) => item.case_number === case_number
   );
@@ -428,6 +428,7 @@ const removeMarker = (case_number) => {
       map.crime_markers.splice(indexToRemove, 1); // Remove the marker from the array
     }
   }
+  selected=!selected
 };
 
 async function filterCrimes() {
