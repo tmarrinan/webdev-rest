@@ -69,7 +69,6 @@ async function uploadIncidents(){
 function updateIncidentCode(range){
     showCode.value = true;
     getCodeFromRange(range);
-    console.log(incidentCodeModel);
     incidentCodeModel.value = '';
 }
 
