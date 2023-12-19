@@ -69,7 +69,7 @@ async function uploadIncidents(){
 function updateIncidentCode(range){
     showCode.value = true;
     getCodeFromRange(range);
-    incidentCodeModel.value = '';
+    code.value = '';
 }
 
 async function getCodeFromRange(range) {
@@ -119,11 +119,11 @@ async function fetchJson(url) {
                         </option>
                     </select>
                     <label v-if="showCode" for="incident-code">Incident Code: <span style="color: red; font-weight: bold">*</span></label><br>
-                    <select v-model="incidentCodeModel" v-if="showCode" name="" id="incident-code">
+                    <select v-model="code" v-if="showCode" name="" id="incident-code">
                         <option selected disabled value="">Select a Code</option>
                         <option
                             v-for="codes in displayedCodes"
-                                value="codes.code">
+                                :value=codes.code>
                                 {{ codes.code }}: {{ codes.type }}
                         </option>
                     </select>
