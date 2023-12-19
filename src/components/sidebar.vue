@@ -1,6 +1,7 @@
 <script>
-import { getTransitionRawChildren } from "vue";
-import NewIncidentForm from "./newIncident.vue";
+import NewIncidentForm from "./newIncident.vue"
+import pageFilters from "./filters.vue"
+
 
 
 export default{
@@ -18,6 +19,7 @@ export default{
             },
             searchValue: '',
             searchErr: false,
+            filters: false,
             showIncidentDropdown: false,
             showNeighborhoodDropdown: false,
             incident_names: {
@@ -78,11 +80,8 @@ export default{
         targetArray.push(value);
       }
     },
-    toggleIncidentDropdown() {
-      this.showIncidentDropdown = !this.showIncidentDropdown;
-    },
-    toggleNeighborhoodDropdown() {
-      this.showNeighborhoodDropdown = !this.showNeighborhoodDropdown;
+    toggleFilters(){
+      this.filters = !this.filters;
     },
     openIncidentForm(){
       this.showIncidentForm = true;
@@ -94,6 +93,7 @@ export default{
   },
   components: {
     NewIncidentForm,
+    pageFilters
   },
 }
 
@@ -101,41 +101,35 @@ export default{
 </script>
 <template>
     <div style="justify-content: space-evenly;">
-         <div class="select">
+        <div class="select">
               <div style="padding-bottom: 5px;">
                     <input id="searchInput" class="dialog-input" style="height: 40px;" v-model="searchValue" placeholder="Neighborhood Name" />
                     <p class="dialog-error" v-if="searchErr">Must Enter a Valid Neighborhood</p>
               </div> 
-              <button class="button" type="button" @click="getSearch">Search</button>
+              <button class="button" type="button" @click="this.$parent.getSearch(searchValue);">Search</button>
         </div>
-        <!-- Dropdown with 12 options -->
+        <!-- Dropdown with 12 options
         <div style="padding-bottom: 5px;">
-            <button class="button" @click="toggleIncidentDropdown">
-              Select Incidents
-            </button>
-            <!-- Incident dropdown -->
-            <div v-show="showIncidentDropdown" class="dropdown-content">
+            <button class="button" @click="toggleIncidentDropdown">Select Incidents</button>
+            <div v-if="showIncidentDropdown" class="dropdown-content">
                 <div v-for="(value, key) in incident_names" :key="key">
-                    <input type="checkbox" @change="incidentChange(value, filtered.incidents)"/>
-                    {{ key }}
+                    <input type="checkbox" @change="incidentChange(value, filtered.incidents)"/>{{ key }}
                 </div>
             </div>
         </div>
 
       <div style="padding-bottom: 5px;">
-          <button class="button" @click="toggleNeighborhoodDropdown">
-            Select Neighborhoods
-          </button>
-          <!-- Neighborhood dropdown -->
-          <div v-show="showNeighborhoodDropdown" class="dropdown-content">
+          <button class="button" @click="toggleNeighborhoodDropdown">Select Neighborhoods</button>
+
+          <div v-if="showNeighborhoodDropdown" class="dropdown-content">
               <div v-for="(value, key) in neighborhood_names" :key="key">
-                  <input type="checkbox" @change="neighborhoodChange(value, filtered.neighborhoods)"/>
-                  {{ key }}
+                  <input type="checkbox" @change="neighborhoodChange(value, filtered.neighborhoods)"/>{{ key }}
               </div>
           </div>
+
       </div>
           
-        <!-- Two dropdowns to select a date -->
+      
         <div class="select">
             <label for="date1">Select Start Date:</label>
             <input type="date" id="date1">
@@ -145,8 +139,7 @@ export default{
             <label for="date2">Select End Date:</label>
             <input type="date" id="date2">
         </div>
-    
-        <!-- Dropdown with 8 options -->
+  
         <div class="select">
             <select>
                 <option value="">Select Limit</option>
@@ -159,11 +152,13 @@ export default{
                 <option value="1">500</option>
                 <option value="8">1000</option>
             </select>
-        </div>
+        </div> -->
     
         <!-- Submit button -->
         <div class="select">
-            <a class="button" style="width: 100%">Apply Filters</a>
+            <button class="button" @click="toggleFilters">Filters</button>
+            <pageFilters v-if="filters == true"></pageFilters>
+            
         </div>
         <div class="select">
             <button class="button" @click="openIncidentForm">Submit New Incident</button>

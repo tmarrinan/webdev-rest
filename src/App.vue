@@ -91,9 +91,6 @@ onMounted(() => {
 });
 
 
-
-// FUNCTIONS
-// Function called once user has entered REST API URL
 function initializeCrimes() {
     return new Promise((resolve, reject) => {
         fetch(crime_url.value + '/codes')
@@ -163,7 +160,11 @@ function addNeighborhoodMarkers() {
       .then(data => {
         // Check if the marker and map are available before updating the popup content
         if (marker && map.leaflet) {
-          marker.setPopupContent(`${neighborhood.marker} # of crimes: ${data.length}`);
+          const popupContent = `
+            <div class="popup-header" style="width: 150px; text-align: center">${neighborhood.marker}</div>
+            <div class="popup-body" style="width: 150px; text-align: center"># of crimes: ${data.length}</div>
+          `;
+          marker.setPopupContent(popupContent);
         }
       })
       .catch(error => {
@@ -176,8 +177,6 @@ function addNeighborhoodMarkers() {
   });
 }
 
-
-// Function called when user presses 'OK' on dialog box
 function closeDialog() {
     let url_input = document.getElementById('dialog-url');
     if (crime_url.value !== '' && url_input.checkValidity()) {
@@ -282,9 +281,10 @@ function plotData(caseNumber) {
     // Use Nominatim API to convert block address to latitude and longitude
     const nominatimEndpoint = 'https://nominatim.openstreetmap.org/search';
     const params = new URLSearchParams({
-      q: blockAddress,
-      format: 'json',
+        q: `${blockAddress}, St. Paul, Minnesota`,
+        format: 'json',
     });
+    
     const nominatimUrl = `${nominatimEndpoint}?${params.toString()}`;
 
     fetch(nominatimUrl)
@@ -331,6 +331,46 @@ function plotData(caseNumber) {
 }
 
 
+function getSearch(neighborhoodName) {
+  // Check if the search value is a valid neighborhood name
+  const validNeighborhood = map.neighborhood_markers.find(neighborhood => neighborhood.marker.toLowerCase() === neighborhoodName.toLowerCase());
+  console.log(neighborhoodName);
+  console.log(validNeighborhood);
+
+  if (validNeighborhood) {
+    // Zoom in on the selected neighborhood
+    map.leaflet.setView(validNeighborhood.location, 14);
+
+    // Filter the incidents for the selected neighborhood
+    const filteredIncidents = crimeData.value.incidents.filter(incident => incident.neighborhood_number === validNeighborhood.number);
+
+    // Update the crimeTableData
+    crimeTableData.value = filteredIncidents.map(incident => ({
+      case_number: incident.case_number,
+      date_time: incident.date_time,
+      code: incident.code,
+      incident: incident.incident,
+      police_grid: incident.police_grid,
+      neighborhood_number: incident.neighborhood_number,
+      block: incident.block,
+    }));
+
+    // Clear existing markers
+    map.leaflet.eachLayer(layer => {
+      if (layer instanceof L.Marker) {
+        map.leaflet.removeLayer(layer);
+      }
+    });
+
+    // Add markers for the selected neighborhood
+    addNeighborhoodMarkers();
+  } else {
+    console.error(`Invalid neighborhood: ${neighborhoodName}`);
+  }
+}
+
+
+
 
 
 
@@ -368,7 +408,7 @@ function plotData(caseNumber) {
                     <button class="button" type="button" @click="closeDialog">OK</button>
                 </div>
             </div>
-            <pageSidebar></pageSidebar>
+            <pageSidebar :getSearch="getSearch"></pageSidebar>
         </div>
     </div>
     <pageFooter></pageFooter>

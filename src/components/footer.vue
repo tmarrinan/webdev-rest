@@ -1,5 +1,5 @@
 <template>
-    <footer class="sticky-footer">
+    <footer class="footer">
       <div class="row">
         <div class="column">
           <p>&copy; 2023 Saint Paul Crime</p>
@@ -20,7 +20,7 @@
   </script>
   
   <style scoped>
-  .sticky-footer {
+  .footer {
     position: fixed;
     bottom: 0;
     width: 100%;
