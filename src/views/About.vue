@@ -89,11 +89,11 @@
 export default {
   data() {
     return {
-      youtubeEmbedLink: "https://www.youtube.com/embed/YrxBCBibVo0"
+      youtubeEmbedLink: "https://www.youtube.com/embed/aYddeCj-nlY"
     };
   }
+};
 
-}
 
 </script>
 
