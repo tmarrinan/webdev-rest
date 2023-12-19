@@ -261,29 +261,34 @@ function closeDialog() {
   }
 }
 
-function deleteIncident(caseNumber) {
-  return fetch(`${crime_url.value}/remove-incident`, {
-    method: "DELETE",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({ case_number: caseNumber }),
-  })
-    .then((response) => {
-      if (response.ok) {
-        console.log(
-          `Incident with case number ${caseNumber} deleted successfully.`
-        );
-        return response.json();
-      } else {
-        console.error("Failed to delete incident.");
-        throw new Error("Failed to delete incident");
-      }
-    })
-    .catch((error) => {
-      console.error("Error:", error);
-      throw error;
+async function deleteIncident(caseNumber) {
+  const userConfirmed = window.confirm("Are you sure you want to delete this incident?");
+  
+  if (!userConfirmed) {
+    return; // Do nothing if the user cancels the deletion
+  }
+
+  try {
+    const response = await fetch(`${crime_url.value}/remove-incident`, {
+      method: "DELETE",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ case_number: caseNumber }),
     });
+
+    if (response.ok) {
+      console.log(`Incident with case number ${caseNumber} deleted successfully.`);
+      fetchAndRefreshTable();
+      return response.json();
+    } else {
+      console.error("Failed to delete incident.");
+      throw new Error("Failed to delete incident");
+    }
+  } catch (error) {
+    console.error("Error:", error);
+    throw error;
+  }
 }
 
 function pressGoAddress() {
@@ -516,18 +521,8 @@ async function addNewIncident() {
 
     if (response.ok) {
       console.log('New incident added successfully!');
-      // Reset the form after successful submission
-      newIncident.value = {
-        case_number: '',
-        date: '',
-        time: '',
-        code: '',
-        incident: '',
-        police_grid: '',
-        neighborhood_number: '',
-        block: ''
-        // Reset other fields here
-      };
+      await fetchAndRefreshTable();
+      resetForm();
     } else {
       console.error('Failed to add new incident.');
       // Handle error or display error message to the user
@@ -537,6 +532,46 @@ async function addNewIncident() {
     // Handle network or other errors
   }
 }
+
+async function fetchAndRefreshTable() {
+  try {
+    table.length = 0;
+    const incidents = await fetchData("/incidents");
+
+    incidents.forEach((incident) => {
+      table.push({
+        case_number: incident.case_number,
+        incident_type: code_map[incident.code],
+        incident: incident.incident,
+        grid: incident.police_grid,
+        neighborhood: neighborhood_map[incident.neighborhood_number],
+        block: replaceIncompleteAddress(incident.block),
+        date: incident.date,
+        time: incident.time,
+        neighborhood_number: incident.neighborhood_number,
+      });
+    });
+
+    console.log(table);
+  } catch (error) {
+    console.log('Error fetching incidents:', error);
+  }
+}
+
+function resetForm() {
+  newIncident.value = {
+    case_number: '',
+    date: '',
+    time: '',
+    code: '',
+    incident: '',
+    police_grid: '',
+    neighborhood_number: '',
+    block: ''
+    // Reset other fields here
+  };
+}
+
 </script>
 <template>
   <dialog id="rest-dialog" open>
