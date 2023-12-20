@@ -8,7 +8,6 @@ import pageTable from "./components/table.vue"
 
 
 
-
 let crime_url = ref('');
 let dialog_err = ref(false);
 
@@ -334,8 +333,6 @@ function plotData(caseNumber) {
 function getSearch(neighborhoodName) {
   // Check if the search value is a valid neighborhood name
   const validNeighborhood = map.neighborhood_markers.find(neighborhood => neighborhood.marker.toLowerCase() === neighborhoodName.toLowerCase());
-  console.log(neighborhoodName);
-  console.log(validNeighborhood);
 
   if (validNeighborhood) {
     // Zoom in on the selected neighborhood
@@ -364,10 +361,16 @@ function getSearch(neighborhoodName) {
 
     // Add markers for the selected neighborhood
     addNeighborhoodMarkers();
+
+    // Call plotData for each incident in the selected neighborhood
+    filteredIncidents.forEach(incident => {
+      plotData(incident); // Assuming plotData function takes an incident as an argument
+    });
   } else {
     console.error(`Invalid neighborhood: ${neighborhoodName}`);
   }
 }
+
 
 
 

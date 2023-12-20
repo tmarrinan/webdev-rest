@@ -120,7 +120,7 @@
   </template>
   
   
-  <style scoped>
+<style scoped>
  .button{
     background-color: rgb(221, 237, 237);
     border-radius: 10px;
