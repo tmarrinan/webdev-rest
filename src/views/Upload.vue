@@ -15,14 +15,13 @@ let dialog_success = ref(false);
 let dialog_caseNumCheck = ref(false);
 let showCode = ref(false);
 let incidentTypeModel = ref('');
-let incidentCodeModel = ref('');
 let displayedCodes = ref('');
 let codeCategories = reactive([
-    {name:'Murder', value:'100-200'},
-    {name:'Rape', value:'200-300'},
-    {name:'Theft', value:'300-400,500-800'},
-    {name:'Assault', value:'400-500,800-900'},
-    {name:'Arson', value:'900-1000'},
+    {name:'Murder', value:'100-199'},
+    {name:'Rape', value:'200-299'},
+    {name:'Theft', value:'300-399,500-799'},
+    {name:'Assault', value:'400-499,800-899'},
+    {name:'Arson', value:'900-999'},
     {name:'Other', value:'1000-x'}
 ]);
 
@@ -141,7 +140,25 @@ async function fetchJson(url) {
 
                 <div class="cell medium-6">
                     <label for="neighborhoodNum">Neighborhood Number: <span style="color: red; font-weight: bold">*</span></label><br>
-                    <input type="number" id="neighborhoodNum" name="neighborhoodNum" required v-model="NeighNum" placeholder="XXX"><br>
+                    <select id="neighborhoodNum" name="neighborhoodNum" v-model="NeighNum">
+                        <option value="1">1</option>
+                        <option value="2">2</option>
+                        <option value="3">3</option>
+                        <option value="4">4</option>
+                        <option value="5">5</option>
+                        <option value="6">6</option>
+                        <option value="7">7</option>
+                        <option value="8">8</option>
+                        <option value="9">9</option>
+                        <option value="10">10</option>
+                        <option value="11">11</option>
+                        <option value="12">12</option>
+                        <option value="13">13</option>
+                        <option value="14">14</option>
+                        <option value="15">15</option>
+                        <option value="16">16</option>
+                        <option value="17">17</option>
+                    </select>
                 </div>
 
                 <div class="cell medium-6">
