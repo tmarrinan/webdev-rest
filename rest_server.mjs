@@ -10,7 +10,7 @@ import { default as sqlite3 } from 'sqlite3';
 const __dirname = path.dirname(url.fileURLToPath(import.meta.url));
 const db_filename = path.join(__dirname, 'db', 'stpaul_crime.sqlite3');
 
-const port = 8001;
+const port = 8002;
 
 let app = express();
 app.use(express.json());
@@ -185,25 +185,33 @@ app.get('/incidents', (req, res) => {
 
 
 // PUT request handler for new crime incident
-app.put('/new-incident/:case_number', (req, res) => {
-    const case_number = req.params.case_number; 
-    const { date_time, code, police_grid, neighborhood_number, block } = req.body;
+app.put('/new-incident', (req, res) => {
+    console.log(req.body); // uploaded data
 
-    if (!date_time || !code || !police_grid || !neighborhood_number || !block) {
-        res.status(400).json({ error: 'Missing required fields in the request body' });
-        return;
-    }
+    dbSelect("SELECT COUNT(*) AS count from incidents WHERE case_number = ?", [req.body.case_number]).then((data) => {
+        if (data[0].count > 0) {
+            throw "Case already exists";
+        }
 
-    const query = 'INSERT INTO incidents (case_number, date_time, code, police_grid, neighborhood_number, block) VALUES (?, ?, ?, ?, ?, ?)';
-    const params = [case_number, date_time, code, police_grid, neighborhood_number, block];
+        let sql = 'INSERT INTO incidents (case_number, date_time, code, incident, police_grid, neighborhood_number, block) VALUES (?, ?, ?, ?, ?, ?, ?)';
 
-    dbRun(query, params)
-        .then(() => {
-            res.status(200).json({ message: 'Incident added successfully' });
-        })
-        .catch((error) => {
-            res.status(500).json({ error: error.message });
-        });
+        let params = [
+            req.body.case_number,
+            req.body.date_time,
+            req.body.code,
+            req.body.incident,
+            req.body.police_grid,
+            req.body.neighborhood_number,
+            req.body.block
+        ];
+        return dbRun(sql, params);
+    })
+    .then(() => {
+        res.status(200).type('txt').send('Added incident');
+    })
+    .catch((error) => {
+        res.status(500).type('txt').send('Error ${error}');
+    });
 });
 //curl -X PUT "http://localhost:8000/new-incident" -H "Content-Type: application/json" -d "{\"case_number\": 1234, \"date\": \"2023-11-13\", \"incident\": \"student mischieft\", \"police_grid\": 130, \"neighborhood_number\": 6, \"block\": \"2346 Random\"}"
 

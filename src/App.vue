@@ -5,6 +5,7 @@ import pageLegend from "./components/legend.vue"
 import pageheader from "./components/header.vue"
 import pageFooter from "./components/footer.vue"
 import pageTable from "./components/table.vue"
+import NewIncidentForm from "./components/NewIncidentForm.vue"
 
 
 
@@ -230,38 +231,28 @@ function deleteIncident(caseNumber) {
     });
 }
 
-function submitIncident(formData) {
-  // Validate form data
-  if (!formData.date_time /* Add other validations as needed */) {
-    // Show error message
-    dialog_err.value = true;
-    return;
-  }
-
-  // Make the PUT request to add a new incident
-  const putData = {
-    case_number: generateCaseNumber(), // Implement a function to generate a case number
-    date_time: formData.date_time,
-    // Add other form fields to putData as needed
-  };
-
-  fetch(`${crime_url.value}/new-incident/${putData.case_number}`, {
-    method: 'PUT',
-    headers: {
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify(putData),
-  })
-    .then(response => response.json())
-    .then(data => {
-      console.log('Incident added successfully:', data);
-      initializeCrimes();
-      addNeighborhoodMarkers();
-    })
-    .catch(error => {
-      console.error('Error adding incident:', error);
-      // Handle error or display a message to the user
+async function submitIncident(incidentData) {
+  try {
+    const response = await fetch(`${crime_url.value}/new-incident`, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(incidentData),
     });
+
+    if (response.ok) {
+      window.alert("New Incident Created!");
+    } else {
+      console.error("Response not OK:", response);
+      crimeTableData.value.push(newIncident);
+      crimeData.value.push(newIncident);
+
+      window.alert("New Incident Not Created!");
+    }
+  } catch (error) {
+    console.error("Error in submitIncident:", error);
+  }
 }
 
 
@@ -414,6 +405,9 @@ function getSearch(neighborhoodName) {
             <pageSidebar :getSearch="getSearch"></pageSidebar>
         </div>
     </div>
+    <!-- In App.vue template -->
+    <new-incident-form @submit-incident="submitIncident"></new-incident-form>
+
     <pageFooter></pageFooter>
  
 </template>

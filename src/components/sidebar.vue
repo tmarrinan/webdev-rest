@@ -1,5 +1,5 @@
 <script>
-import NewIncidentForm from "./newIncident.vue"
+import NewIncidentForm from "./NewIncidentForm.vue"
 import pageFilters from "./filters.vue"
 
 

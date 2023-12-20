@@ -42,9 +42,11 @@
   </template>
   
   <script>
+import { reactive } from 'vue';
+
   export default {
     data() {
-      return {
+      return reactive({
         formData: {
           case_number: "",
           date_time: "",
@@ -55,13 +57,14 @@
           block: "",
           // Add other form fields here
         },
-      };
+      });
     },
     methods: {
-      submitForm() {
-        // Call the function to submit the PUT request in app.vue
-        this.$emit("submit", this.formData);
-      },
+
+        submitForm() {
+      this.$emit("submit-incident", this.formData);
+    },
+
     },
   };
   </script>
