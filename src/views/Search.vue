@@ -476,7 +476,7 @@ async function updateVisibleCrimes() {
 
                 </div>
 
-                <div class="cell small-12" style="margin-top:1rem; padding: 1rem; background-color: aquamarine;">
+                <div class="cell small-12" style="margin-top:1rem; padding: 1rem;">
                     <div class="button tag-button"
                         v-for="tag in tags" >
                             {{ tag.text }}
