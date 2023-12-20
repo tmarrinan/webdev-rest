@@ -5,6 +5,7 @@ import IncidentTable from '../components/IncidentTable.vue';
 let base_url = ref('http://localhost:8001');
 let dialog_err = ref(false);
 let location = ref('');
+let markers = ref([]);
 
 // data models
 let crimes = ref([]);
@@ -104,21 +105,9 @@ onMounted(() => {
     // Draw markers once data is fetched
     initializeCrimes()
     .then(() => {
-        map.neighborhood_markers.forEach((marker) => {
-            let marker_name = getNeighborhoodNameById(marker.number, neighborhoods.value);
-            let marker_crimes = calculateCrimes(marker_name, crimes.value, neighborhoods.value);
-            L.marker(marker.location).addTo(map.leaflet).bindPopup(
-                `${marker_name}` +
-                ': ' +
-                `${marker_crimes}`
-        ).on('click', ()=>{
-            console.log("Pan in!");
-            location.value = marker_name+" Saint Paul, MN";
-            document.getElementById('dialog-loc').value = marker.location;
-            closeDialog();
-        });
-    });
-    }).catch(error => {
+        drawMarkers();
+    })
+    .catch(error => {
             console.log('Error:', error);
     });
     
@@ -140,8 +129,116 @@ async function initializeCrimes() {
     });
 }
 
+// Fetches filter crime data based on user parameters
+async function updateCrimes(params) {
+    
+    // Compute all codes
+    Promise.all(getAllCodes(params))
+    .then(data => {
+        let code_params = parseCodes(data);
+        let neighborhood_params = parseNeighborhoods(params);
+        params = buildParamString(params, code_params, neighborhood_params);
+        return fetchJson(base_url.value + "/incidents" + params);
+    })
+    .then(updated_data => {
+        crimes.value = updated_data;
+        updateVisibleCrimes();
+        drawMarkers();
+    })
+    .catch(error => {
+        console.log('Error:', error);
+    })
+}
+
+function getAllCodes(params) {
+    let code_data = [];
+    params.forEach((param) => {
+        if (param.type === 'code_range') {
+            code_data.push(
+                fetchJson(base_url.value + '/codes?code_range='+ param.value)
+            );
+        }
+    });
+    return code_data;
+}
+
+function parseCodes(data) {
+    let code_params = ''
+    data.forEach((code_list) => {
+        code_list.forEach((code_item) => {
+            code_params += code_item.code + ","
+        });
+    });
+    code_params = code_params !== '' ? code_params.slice(0, -1) : '';
+    return code_params
+}
+
+function parseNeighborhoods(params) {
+    let neighborhood_params = ''
+    params.forEach((param) => {
+        if (param.type == 'neighborhood') {
+            neighborhood_params += param.value + ","
+        }
+    });
+    neighborhood_params = neighborhood_params !== '' ? neighborhood_params.slice(0, -1) : '';
+    return neighborhood_params;
+}
+
+function buildParamString(params, code_params, neighborhood_params) {
+    let param_string = '?';
+    params.forEach((param) => {
+        if (param.type === 'limit' && param.value !== '') {
+            param_string += 'limit=' + param.value + '&'; 
+        } else if (param.type === 'start_date') {
+            param_string += 'start_date=' + param.value + '&';
+        } else if (param.type === 'end_date') {
+            param_string += 'end_date=' + param.value + '&';
+        }
+    });
+    if (code_params !== '') {
+        param_string += 'code=' + code_params + '&';
+    }
+    if (neighborhood_params !== '') {
+        param_string += 'neighborhood=' + neighborhood_params + '&';
+    }
+    param_string = param_string !== '' ? param_string.slice(0, -1) : '';
+    return param_string;
+}
+
 async function fetchJson(url) {
     return fetch(url).then(response => response.json());
+}
+
+function drawMarkers() {
+    // remove markers currently on map
+    if (markers.value.length > 0) {
+        markers.value.forEach((marker) => {
+            map.leaflet.removeLayer(marker);
+        })
+        markers.value = [];
+    }
+    
+    map.neighborhood_markers.forEach((marker) => {
+        let marker_name = getNeighborhoodNameById(marker.number, neighborhoods.value);
+        let marker_crimes = calculateCrimes(marker_name, crimes.value, neighborhoods.value);
+        
+        // only add markers that have crimes
+        if (marker_crimes > 0) {
+            let marker_layer = L.marker(marker.location).bindPopup(
+                `${marker_name}` +
+                ': ' +
+                `${marker_crimes}`
+            ).on('click', ()=>{
+                console.log("Pan in!");
+                location.value = marker_name+" Saint Paul, MN";
+                document.getElementById('dialog-loc').value = marker.location;
+                closeDialog();
+            });
+            markers.value.push(marker_layer);
+            map.leaflet.addLayer(marker_layer);
+        }
+        
+    });
 }
 
 function getNeighborhoodNameById(id, neighborhoods) {
@@ -193,6 +290,7 @@ function closeDialog() {
             collectiveInfo.push({type:'limit', value: limit.value});
         }
         console.log(collectiveInfo);
+        updateCrimes(collectiveInfo);
     }
 }
 
@@ -378,7 +476,7 @@ async function updateVisibleCrimes() {
 
                 </div>
 
-                <div class="cell small-12" style="margin-top:1rem; padding: 1rem; background-color: aquamarine;">
+                <div class="cell small-12" style="margin-top:1rem; padding: 1rem;">
                     <div class="button tag-button"
                         v-for="tag in tags" >
                             {{ tag.text }}
