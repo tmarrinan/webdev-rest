@@ -1,16 +1,37 @@
 {
-    "name": "rest_server",
-    "description": "REST Server",
+    "name": "stpaul_crime",
+    "description": "RESTful Web Server and Single Page Application",
     "version": "1.0.0",
     "author": {
-        "name": "",
-        "email": ""
+        "name": "Gullet Cabdullah",
+        "email": "cabd3771@stthomas.edu"
     },
     "contributors": [
+        {
+            "name": "Dalton Schwanke",
+            "email": "schw1057@stthomas.edu"
+        },
+        {
+            "name": "Ian Yao",
+            "email": "ian.yao@stthomas.edu"
+        }
     ],
-    "repository": {},
+    "repository": {
+        "url": "https://github.com/gcabdu/webdev-rest"
+    },
+    "scripts": {
+        "dev": "vite",
+        "build": "vite build",
+        "preview": "vite preview"
+    },
     "dependencies": {
+        "cors": "^2.8.5",
         "express": "^4.18.2",
-        "sqlite3": "^5.1.6"
+        "sqlite3": "^5.1.6",
+        "vue": "^3.3.4"
+    },
+    "devDependencies": {
+        "@vitejs/plugin-vue": "^4.4.0",
+        "vite": "^4.4.11"
     }
 }
